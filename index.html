@@ -569,73 +569,9 @@ function standardSetup(){
   turn='white';
 }
 
-function parseSAN(san){
+function replaySANHistory(historyText){
 
-  san = san.replace(/[+#?!]/g,'');
-
-  if(san==='O-O' || san==='O-O-O'){
-    return null;
-  }
-
-  var target = san.slice(-2);
-
-  if(!/^[a-h][1-8]$/.test(target)){
-    return null;
-  }
-
-  var to = parseSquare(target);
-
-  var pieceType = 'P';
-
-  if(/[KQRBN]/.test(san.charAt(0))){
-    pieceType = san.charAt(0);
-  }
-
-  for(var r=0;r<8;r++){
-    for(var c=0;c<8;c++){
-
-      var p = board[r][c];
-      if(!p) continue;
-
-      if(turn==='white'){
-        if(p!==pieceType) continue;
-      } else {
-        if(p!==pieceType.toLowerCase()) continue;
-      }
-
-      if(isBasicLegalMove({r:r,c:c},to,p)){
-        return {
-          from:{r:r,c:c},
-          to:to
-        };
-      }
-    }
-  }
-
-  return null;
-}
-
-function loadPGN(){
-
-  var txt = document.getElementById('pgnInput').value;
-
-  if(!txt){
-    document.getElementById('info').innerHTML='Paste PGN first';
-    return;
-  }
-
-  txt = txt.replace(/\[[^\]]*\]/g,'');
-  txt = txt.replace(/\{[^}]*\}/g,'');
-  txt = txt.replace(/\([^)]*\)/g,'');
-  txt = txt.replace(/\d+\./g,'');
-  txt = txt.replace(/1-0|0-1|1\/2-1\/2|\*/g,'');
-
-  var toks = txt.split(/\s+/);
-
-  standardSetup();
-
-  solutionMoves = [];
-  solutionIndex = 0;
+  var toks = historyText.split(/\s+/);
 
   for(var i=0;i<toks.length;i++){
 
@@ -645,34 +581,176 @@ function loadPGN(){
     var mv = parseSAN(san);
 
     if(mv){
-      solutionMoves.push(mv);
       board[mv.to.r][mv.to.c] = board[mv.from.r][mv.from.c];
       board[mv.from.r][mv.from.c] = '';
       turn = turn==='white' ? 'black' : 'white';
     }
   }
+}
+
+function parseSolutionCoords(solText){
+
+  solutionMoves = [];
+  solutionIndex = 0;
+
+  var toks = solText.split(/\s+/);
+
+  for(var i=0;i<toks.length;i++){
+
+    var m = toks[i];
+    if(!m || m.length<4) continue;
+
+    solutionMoves.push({
+      from: parseSquare(m.substring(0,2)),
+      to: parseSquare(m.substring(2,4))
+    });
+  }
+}
+
+function loadPGN(){
+
+  var txt = document.getElementById('pgnInput').value;
+
+  if(!txt){
+    document.getElementById('info').innerHTML='Paste puzzle first';
+    return;
+  }
+
+  var parts = txt.split('|');
+
+  if(parts.length < 3){
+    document.getElementById('info').innerHTML =
+      'Expected format: Goal|History|Solution';
+    return;
+  }
+
+  var goal = parts[0].trim();
+  var history = parts[1].trim();
+  var solution = parts[2].trim();
+
+  if(!goal){
+    goal = 'To win';
+  }
 
   standardSetup();
 
+  replaySANHistory(history);
+
   initialBoard = cloneBoard(board);
-  initialTurn = 'white';
+  initialTurn = turn;
+
+  parseSolutionCoords(solution);
+
   setupMode = false;
   selected = null;
+  solutionMode = false;
+
   moveHistory = [];
   historyIndex = -1;
   lastMove = null;
 
   document.getElementById('setupPanel').style.display='none';
   document.getElementById('playPanel').style.display='block';
+
   document.getElementById('info').innerHTML =
-    'PGN Loaded (' + solutionMoves.length + ' moves)';
+    (turn==='white' ? 'White' : 'Black') +
+    ' to play — ' + goal;
+
+  drawBoard();
+}
+
+function startSolutionMode(){
+  solutionMode = true;
+  selected = null;
+  document.getElementById('info').innerHTML='Solution Mode';
+}
+
+function handleSquareClick(r,c){
+
+  if(setupMode){
+    board[r][c] = selectedPiece;
+    drawBoard();
+    return;
+  }
+
+  if(solutionMode){
+    playSolutionMove();
+    return;
+  }
+
+  var piece = board[r][c];
+
+  if(!selected){
+    if(piece && isOwnTurnPiece(piece)){
+      selected = {r:r,c:c};
+      drawBoard();
+    }
+    return;
+  }
+
+  if(selected.r===r && selected.c===c){
+    selected = null;
+    drawBoard();
+    return;
+  }
+
+  if(solutionIndex < solutionMoves.length){
+
+    var exp = solutionMoves[solutionIndex];
+
+    if(
+      exp.from.r===selected.r &&
+      exp.from.c===selected.c &&
+      exp.to.r===r &&
+      exp.to.c===c
+    ){
+      executeMove(selected,{r:r,c:c});
+      solutionIndex++;
+
+      if(solutionIndex>=solutionMoves.length){
+        document.getElementById('info').innerHTML='Puzzle Solved';
+      }
+    }
+    else{
+      document.getElementById('info').innerHTML='Wrong move';
+    }
+  }
+
+  selected = null;
+  drawBoard();
+}
+
+function nextMove(){
+
+  if(solutionIndex>=solutionMoves.length) return;
+
+  executeMove(
+    solutionMoves[solutionIndex].from,
+    solutionMoves[solutionIndex].to
+  );
+
+  solutionIndex++;
+  drawBoard();
+}
+
+function resetPuzzle(){
+
+  if(!initialBoard) return;
+
+  board = cloneBoard(initialBoard);
+  turn = initialTurn;
+  selected = null;
+  solutionIndex = 0;
+  solutionMode = false;
+  moveHistory = [];
+  historyIndex = -1;
+  lastMove = null;
 
   drawBoard();
 }
 
 initEmptyBoard();
 drawBoard();
-
 </script>
 </body>
 </html>
