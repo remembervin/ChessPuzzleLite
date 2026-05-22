@@ -228,19 +228,67 @@ function cloneBoard(b){
 
 function loadPuzzleFile(){
 
+  document.getElementById('info').textContent =
+    'Fetching Lichess daily puzzle...';
+
   var xhr = new XMLHttpRequest();
 
   xhr.onreadystatechange = function(){
-    if(xhr.readyState==4 && xhr.status==200){
 
-      puzzleList = xhr.responseText.split("\n").filter(x=>x.trim());
-      puzzleIndex = 0;
+    if(xhr.readyState !== 4) return;
 
-      loadNextPuzzle();
+    if(xhr.status !== 200){
+      document.getElementById('info').textContent =
+        'Lichess fetch failed';
+      return;
+    }
+
+    try{
+
+      var data = JSON.parse(xhr.responseText);
+
+      if(!data || !data.game || !data.puzzle){
+        document.getElementById('info').textContent =
+          'Invalid Lichess response';
+        return;
+      }
+
+      var pgn = data.game.pgn || '';
+      var solution = data.puzzle.solution || [];
+      var themes = data.puzzle.themes || [];
+
+      var goal = 'To win';
+
+      if(themes.indexOf('mate') >= 0){
+        goal = 'Mate in ' + Math.ceil(solution.length / 2);
+      }
+
+      pgn = pgn.replace(/\[[^\]]*\]/g,'');
+      pgn = pgn.replace(/\d+\-0|0\-\d|1\/2\-1\/2|\*/g,'');
+      pgn = pgn.trim();
+
+      var compact =
+        goal + '|' +
+        pgn + '|' +
+        solution.join(' ');
+
+      document.getElementById('pgnInput').value = compact;
+
+      loadPGN();
+
+    }catch(e){
+
+      document.getElementById('info').textContent =
+        'Puzzle parse error';
     }
   };
 
-  xhr.open("GET", "puzzles.txt", true);
+  xhr.open(
+    'GET',
+    'https://lichess.org/api/puzzle/daily',
+    true
+  );
+
   xhr.send();
 }
 
