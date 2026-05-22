@@ -9,7 +9,7 @@
 body{
   max-width:760px;
   margin:0 auto;
-  padding:6px;
+  padding:4px;
   font-family:sans-serif;
   text-align:center;
   background:#fff;
@@ -21,10 +21,10 @@ h2{
   font-size:22px;
 }
 
-#status{
+#info{
+  min-height:24px;
+  margin:6px 0;
   font-size:16px;
-  margin:8px 0;
-  min-height:22px;
 }
 
 #board table{
@@ -36,10 +36,10 @@ h2{
 #board td{
   width:42px;
   height:42px;
-  border:1px solid #666;
+  padding:0;
   text-align:center;
   vertical-align:middle;
-  padding:0;
+  border:1px solid #666;
   cursor:pointer;
 }
 
@@ -47,11 +47,15 @@ h2{
 .dark{ background:#aaa; }
 
 .selected{
-  outline:2px solid #222;
+  outline:2px solid #111;
 }
 
 .move{
   box-shadow: inset 0 0 0 1px #444;
+}
+
+.capture{
+  outline:2px solid #000;
 }
 
 .lastfrom{
@@ -59,7 +63,7 @@ h2{
 }
 
 .lastto{
-  box-shadow: inset 0 0 0 2px #222;
+  box-shadow: inset 0 0 0 2px #111;
 }
 
 .checking{
@@ -70,34 +74,37 @@ h2{
   box-shadow: inset 0 0 8px 3px #000;
 }
 
-textarea{
-  width:95%;
-  height:110px;
-  font-size:14px;
-  margin:8px 0;
-}
-
-button, select{
+button, input, select{
   font-size:15px;
-  padding:6px 8px;
   margin:3px;
-}
-
-#editorPanel{
-  margin:10px 0;
-  padding:6px;
-  border:1px solid #888;
-}
-
-#replayPanel{
-  margin:10px 0;
-  padding:6px;
-  border:1px solid #888;
 }
 
 #promotion{
   display:none;
-  margin:10px;
+  margin:8px 0;
+}
+
+#setupPanel{
+  margin:10px 0;
+  padding:6px;
+  border:1px solid #999;
+}
+
+#playPanel{
+  margin:10px 0;
+  padding:6px;
+  border:1px solid #999;
+  display:none;
+}
+
+#pgnPanel{
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid #aaa;
+}
+
+#pgnInput{
+  width:90%;
 }
 </style>
 </head>
@@ -106,227 +113,124 @@ button, select{
 
 <h2>Kobo Chess Puzzle Studio</h2>
 
-<div id="status">Ready</div>
+<div id="info">Setup Mode</div>
 
 <div id="board"></div>
 
 <div id="promotion"></div>
 
-<div id="editorPanel">
-  <div><b>Board Editor</b></div>
+<div id="setupPanel">
 
-  <select id="piecePicker">
-    <option value="">Empty</option>
-    <option value="K">White King</option>
-    <option value="Q">White Queen</option>
-    <option value="R">White Rook</option>
-    <option value="B">White Bishop</option>
-    <option value="N">White Knight</option>
-    <option value="P">White Pawn</option>
-    <option value="k">Black King</option>
-    <option value="q">Black Queen</option>
-    <option value="r">Black Rook</option>
-    <option value="b">Black Bishop</option>
-    <option value="n">Black Knight</option>
-    <option value="p">Black Pawn</option>
-  </select>
+  <div><b>Setup</b></div>
 
-  <select id="sideToMove">
-    <option value="white">White to move</option>
-    <option value="black">Black to move</option>
-  </select>
+  <div>
+    <button onclick="selectPiece('K')">WK</button>
+    <button onclick="selectPiece('Q')">WQ</button>
+    <button onclick="selectPiece('R')">WR</button>
+    <button onclick="selectPiece('B')">WB</button>
+    <button onclick="selectPiece('N')">WN</button>
+    <button onclick="selectPiece('P')">WP</button>
+  </div>
 
-  <button onclick="enableEditor()">Editor</button>
-  <button onclick="clearBoard()">Clear</button>
-  <button onclick="standardSetup()">Std</button>
-  <button onclick="flipBoard()">Flip</button>
+  <div>
+    <button onclick="selectPiece('k')">BK</button>
+    <button onclick="selectPiece('q')">BQ</button>
+    <button onclick="selectPiece('r')">BR</button>
+    <button onclick="selectPiece('b')">BB</button>
+    <button onclick="selectPiece('n')">BN</button>
+    <button onclick="selectPiece('p')">BP</button>
+  </div>
+
+  <div>
+    <button onclick="clearSquareMode()">Clear Square</button>
+    <button onclick="clearBoard()">Clear Board</button>
+  </div>
+
+  <div>
+    <button onclick="setTurn('white')">White To Play</button>
+    <button onclick="setTurn('black')">Black To Play</button>
+  </div>
+
+  <div>
+    <button onclick="doneSetup()">GO</button>
+  </div>
+
 </div>
 
-<div>
-  <div><b>Paste PGN</b></div>
-  <textarea id="pgnInput"></textarea>
-  <br>
-  <button onclick="loadPGN()">Load PGN</button>
-</div>
+<div id="playPanel">
 
-<div id="replayPanel">
   <div><b>Puzzle Controls</b></div>
-  <button onclick="prevMove()">Prev</button>
-  <button onclick="nextMove()">Next</button>
-  <button onclick="restartPuzzle()">Restart</button>
-  <button onclick="toggleSolveMode()">Solve</button>
+
+  <button onclick="prevMove()">◀ Prev</button>
+  <button onclick="nextMove()">Next ▶</button>
+  <button onclick="resetPuzzle()">Reset</button>
+  <button onclick="startSolutionMode()">💡 Solution</button>
+  <button onclick="flipBoard()">Flip</button>
+  <button onclick="backToSetup()">Edit</button>
+
+</div>
+
+<div id="pgnPanel">
+  <div><b>PGN Import</b></div>
+  <input id="pgnInput" type="text" placeholder="Paste Lichess PGN here">
+  <br>
+  <button onclick="loadPGN()">Load PGN Puzzle</button>
 </div>
 
 <script>
 
 var pieces = {
 
-K:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="white" stroke="black" stroke-width="2">' +
-'<line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/>' +
-'<line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/>' +
-'<path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>',
+K:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="white" stroke="black" stroke-width="2"><line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/><line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/><path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
 
-k:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="black" stroke="black" stroke-width="2">' +
-'<line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/>' +
-'<line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/>' +
-'<path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>',
+k:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="black" stroke="black" stroke-width="2"><line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/><line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/><path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
 
-Q:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="white" stroke="black" stroke-width="2">' +
-'<path d="M17 18 L43 18 L40 32 L20 32 Z"/>' +
-'<rect x="19" y="34" width="22" height="12"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'<line x1="18" y1="18" x2="14" y2="10"/>' +
-'<line x1="24" y1="18" x2="22" y2="8"/>' +
-'<line x1="30" y1="18" x2="30" y2="6"/>' +
-'<line x1="36" y1="18" x2="38" y2="8"/>' +
-'<line x1="42" y1="18" x2="46" y2="10"/>' +
-'<circle cx="14" cy="10" r="2.5"/>' +
-'<circle cx="22" cy="8" r="2.5"/>' +
-'<circle cx="30" cy="6" r="2.5"/>' +
-'<circle cx="38" cy="8" r="2.5"/>' +
-'<circle cx="46" cy="10" r="2.5"/>' +
-'</g></svg>',
+Q:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="white" stroke="black" stroke-width="2"><path d="M17 18 L43 18 L40 32 L20 32 Z"/><rect x="19" y="34" width="22" height="12"/><rect x="14" y="50" width="32" height="4"/><line x1="18" y1="18" x2="14" y2="10"/><line x1="24" y1="18" x2="22" y2="8"/><line x1="30" y1="18" x2="30" y2="6"/><line x1="36" y1="18" x2="38" y2="8"/><line x1="42" y1="18" x2="46" y2="10"/><circle cx="14" cy="10" r="2.5"/><circle cx="22" cy="8" r="2.5"/><circle cx="30" cy="6" r="2.5"/><circle cx="38" cy="8" r="2.5"/><circle cx="46" cy="10" r="2.5"/></g></svg>',
 
-q:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="black" stroke="black" stroke-width="2">' +
-'<path d="M17 18 L43 18 L40 32 L20 32 Z"/>' +
-'<rect x="19" y="34" width="22" height="12"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'<line x1="18" y1="18" x2="14" y2="10"/>' +
-'<line x1="24" y1="18" x2="22" y2="8"/>' +
-'<line x1="30" y1="18" x2="30" y2="6"/>' +
-'<line x1="36" y1="18" x2="38" y2="8"/>' +
-'<line x1="42" y1="18" x2="46" y2="10"/>' +
-'<circle cx="14" cy="10" r="2.5"/>' +
-'<circle cx="22" cy="8" r="2.5"/>' +
-'<circle cx="30" cy="6" r="2.5"/>' +
-'<circle cx="38" cy="8" r="2.5"/>' +
-'<circle cx="46" cy="10" r="2.5"/>' +
-'</g></svg>',
+q:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="black" stroke="black" stroke-width="2"><path d="M17 18 L43 18 L40 32 L20 32 Z"/><rect x="19" y="34" width="22" height="12"/><rect x="14" y="50" width="32" height="4"/><line x1="18" y1="18" x2="14" y2="10"/><line x1="24" y1="18" x2="22" y2="8"/><line x1="30" y1="18" x2="30" y2="6"/><line x1="36" y1="18" x2="38" y2="8"/><line x1="42" y1="18" x2="46" y2="10"/><circle cx="14" cy="10" r="2.5"/><circle cx="22" cy="8" r="2.5"/><circle cx="30" cy="6" r="2.5"/><circle cx="38" cy="8" r="2.5"/><circle cx="46" cy="10" r="2.5"/></g></svg>',
 
-R:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="white" stroke="black" stroke-width="2">' +
-'<rect x="16" y="12" width="8" height="6"/>' +
-'<rect x="26" y="12" width="8" height="6"/>' +
-'<rect x="36" y="12" width="8" height="6"/>' +
-'<rect x="16" y="18" width="28" height="6"/>' +
-'<rect x="20" y="24" width="20" height="22"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>',
+R:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="white" stroke="black" stroke-width="2"><rect x="16" y="12" width="8" height="6"/><rect x="26" y="12" width="8" height="6"/><rect x="36" y="12" width="8" height="6"/><rect x="16" y="18" width="28" height="6"/><rect x="20" y="24" width="20" height="22"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
 
-r:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="black" stroke="black" stroke-width="2">' +
-'<rect x="16" y="12" width="8" height="6"/>' +
-'<rect x="26" y="12" width="8" height="6"/>' +
-'<rect x="36" y="12" width="8" height="6"/>' +
-'<rect x="16" y="18" width="28" height="6"/>' +
-'<rect x="20" y="24" width="20" height="22"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>',
+r:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="black" stroke="black" stroke-width="2"><rect x="16" y="12" width="8" height="6"/><rect x="26" y="12" width="8" height="6"/><rect x="36" y="12" width="8" height="6"/><rect x="16" y="18" width="28" height="6"/><rect x="20" y="24" width="20" height="22"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
 
-B:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="white" stroke="black" stroke-width="2">' +
-'<path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/>' +
-'<line x1="27" y1="14" x2="33" y2="22"/>' +
-'<path d="M22 33 L38 33 L42 47 L18 47 Z"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>',
+B:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="white" stroke="black" stroke-width="2"><path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/><line x1="27" y1="14" x2="33" y2="22"/><path d="M22 33 L38 33 L42 47 L18 47 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
 
-b:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="black" stroke="black" stroke-width="2">' +
-'<path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/>' +
-'<line x1="27" y1="14" x2="33" y2="22" stroke="white"/>' +
-'<path d="M22 33 L38 33 L42 47 L18 47 Z"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>',
+b:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="black" stroke="black" stroke-width="2"><path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/><line x1="27" y1="14" x2="33" y2="22" stroke="white"/><path d="M22 33 L38 33 L42 47 L18 47 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
 
-N:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g transform="translate(6,7) scale(1.48)" fill="white" stroke="black" stroke-width="1.15">' +
-'<path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/>' +
-'<rect x="6.5" y="27.2" width="18.5" height="4.2"/>' +
-'</g></svg>',
+N:'<svg viewBox="0 0 60 60" width="32" height="32"><g transform="translate(6,7) scale(1.48)" fill="white" stroke="black" stroke-width="1.15"><path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/><rect x="6.5" y="27.2" width="18.5" height="4.2"/></g></svg>',
 
-n:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g transform="translate(6,7) scale(1.48)" fill="black" stroke="black" stroke-width="1.15">' +
-'<path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/>' +
-'<rect x="6.5" y="27.2" width="18.5" height="4.2"/>' +
-'</g></svg>',
+n:'<svg viewBox="0 0 60 60" width="32" height="32"><g transform="translate(6,7) scale(1.48)" fill="black" stroke="black" stroke-width="1.15"><path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/><rect x="6.5" y="27.2" width="18.5" height="4.2"/></g></svg>',
 
-P:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="white" stroke="black" stroke-width="2">' +
-'<circle cx="30" cy="15" r="7"/>' +
-'<path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>',
+P:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="white" stroke="black" stroke-width="2"><circle cx="30" cy="15" r="7"/><path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
 
-p:'<svg viewBox="0 0 60 60" width="32" height="32">' +
-'<g fill="black" stroke="black" stroke-width="2">' +
-'<circle cx="30" cy="15" r="7"/>' +
-'<path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/>' +
-'<rect x="14" y="50" width="32" height="4"/>' +
-'</g></svg>'
+p:'<svg viewBox="0 0 60 60" width="32" height="32"><g fill="black" stroke="black" stroke-width="2"><circle cx="30" cy="15" r="7"/><path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>'
 
 };
 
-var board;
+var board = [];
 var selected = null;
-var flipped = false;
-var editorMode = false;
-var solveMode = false;
+var selectedPiece = '';
+var setupMode = true;
 var turn = 'white';
-var enPassant = null;
-var moved = {};
-var pendingPromotion = null;
+var flipped = false;
 
-var puzzleMoves = [];
-var currentStep = 0;
-var puzzleStartBoard = null;
+var initialBoard = null;
+var initialTurn = 'white';
+
+var solutionMoves = [];
+var solutionIndex = 0;
+var solutionMode = false;
+
+var moveHistory = [];
+var historyIndex = -1;
 
 var lastMove = null;
-var checkingPieceSquare = null;
-var checkmateSquare = null;
 
 function cloneBoard(b){
   return JSON.parse(JSON.stringify(b));
 }
 
-function sign(x){
-  return x>0 ? 1 : x<0 ? -1 : 0;
-}
-
-function setStatus(msg){
-  document.getElementById('status').innerHTML = msg;
-}
-
-function standardSetup(){
-  board = [
-    ['r','n','b','q','k','b','n','r'],
-    ['p','p','p','p','p','p','p','p'],
-    ['','','','','','','',''],
-    ['','','','','','','',''],
-    ['','','','','','','',''],
-    ['','','','','','','',''],
-    ['P','P','P','P','P','P','P','P'],
-    ['R','N','B','Q','K','B','N','R']
-  ];
-
-  turn = document.getElementById('sideToMove').value;
-  moved = {};
-  enPassant = null;
-  selected = null;
-  lastMove = null;
-
-  draw();
-}
-
-function clearBoard(){
+function initEmptyBoard(){
   board = [];
   for(var r=0;r<8;r++){
     board[r] = [];
@@ -334,23 +238,63 @@ function clearBoard(){
       board[r][c] = '';
     }
   }
-  draw();
 }
 
-function enableEditor(){
-  editorMode = !editorMode;
-  setStatus(editorMode ? 'Editor mode ON' : 'Editor mode OFF');
+function selectPiece(p){
+  selectedPiece = p;
+}
+
+function clearSquareMode(){
+  selectedPiece = '';
+}
+
+function setTurn(t){
+  turn = t;
+  document.getElementById('info').innerHTML =
+    'Setup Mode (' + t + ' to move)';
+}
+
+function clearBoard(){
+  initEmptyBoard();
+  drawBoard();
+}
+
+function doneSetup(){
+  setupMode = false;
+  initialBoard = cloneBoard(board);
+  initialTurn = turn;
+  moveHistory = [];
+  historyIndex = -1;
+  solutionIndex = 0;
+  solutionMode = false;
+
+  document.getElementById('setupPanel').style.display='none';
+  document.getElementById('playPanel').style.display='block';
+  document.getElementById('info').innerHTML='Puzzle Ready';
+
+  drawBoard();
+}
+
+function backToSetup(){
+  setupMode = true;
+  solutionMode = false;
+
+  document.getElementById('setupPanel').style.display='block';
+  document.getElementById('playPanel').style.display='none';
+  document.getElementById('info').innerHTML='Setup Mode';
+
+  drawBoard();
 }
 
 function flipBoard(){
   flipped = !flipped;
-  draw();
+  drawBoard();
 }
 
-function draw(){
+function drawBoard(){
 
-  var el = document.getElementById('board');
-  el.innerHTML = '';
+  var boardDiv = document.getElementById('board');
+  boardDiv.innerHTML = '';
 
   var tbl = document.createElement('table');
 
@@ -387,7 +331,7 @@ function draw(){
 
       (function(x,y){
         td.onclick = function(){
-          handleTap(x,y);
+          handleSquareClick(x,y);
         };
       })(rr,cc);
 
@@ -397,77 +341,138 @@ function draw(){
     tbl.appendChild(tr);
   }
 
-  el.appendChild(tbl);
+  boardDiv.appendChild(tbl);
 }
 
 function isWhitePiece(p){
   return p && p===p.toUpperCase();
 }
 
-function isOwnPiece(p){
+function isOwnTurnPiece(p){
   if(turn==='white') return isWhitePiece(p);
   return p && !isWhitePiece(p);
 }
 
-function handleTap(r,c){
-
-  if(editorMode){
-    var pick = document.getElementById('piecePicker').value;
-    board[r][c] = pick;
-    draw();
-    return;
-  }
-
-  if(solveMode){
-    handleSolveTap(r,c);
-    return;
-  }
+function sign(x){
+  return x>0 ? 1 : x<0 ? -1 : 0;
 }
 
-function handleSolveTap(r,c){
+function clearPath(from,to){
+
+  var dr = sign(to.r-from.r);
+  var dc = sign(to.c-from.c);
+
+  var r = from.r + dr;
+  var c = from.c + dc;
+
+  while(r!==to.r || c!==to.c){
+    if(board[r][c]) return false;
+    r += dr;
+    c += dc;
+  }
+
+  return true;
+}
+
+function isBasicLegalMove(from,to,piece){
+
+  var target = board[to.r][to.c];
+
+  if(target && isWhitePiece(target)===isWhitePiece(piece)){
+    return false;
+  }
+
+  var dr = to.r-from.r;
+  var dc = to.c-from.c;
+
+  switch(piece.toLowerCase()){
+
+    case 'p':
+      var dir = piece==='P' ? -1 : 1;
+
+      if(dc===0 && !target && dr===dir) return true;
+
+      if(dc===0 && !target && dr===2*dir){
+        if(piece==='P' && from.r===6 && !board[5][from.c]) return true;
+        if(piece==='p' && from.r===1 && !board[2][from.c]) return true;
+      }
+
+      if(Math.abs(dc)===1 && target && dr===dir){
+        return true;
+      }
+
+      return false;
+
+    case 'n':
+      return (
+        (Math.abs(dr)===2 && Math.abs(dc)===1) ||
+        (Math.abs(dr)===1 && Math.abs(dc)===2)
+      );
+
+    case 'b':
+      return Math.abs(dr)===Math.abs(dc) && clearPath(from,to);
+
+    case 'r':
+      return (dr===0 || dc===0) && clearPath(from,to);
+
+    case 'q':
+      return (
+        ((dr===0 || dc===0) || Math.abs(dr)===Math.abs(dc)) &&
+        clearPath(from,to)
+      );
+
+    case 'k':
+      return Math.abs(dr)<=1 && Math.abs(dc)<=1;
+  }
+
+  return false;
+}
+
+function handleSquareClick(r,c){
+
+  if(setupMode){
+    board[r][c] = selectedPiece;
+    drawBoard();
+    return;
+  }
+
+  if(solutionMode){
+    playSolutionMove();
+    return;
+  }
 
   var piece = board[r][c];
 
   if(!selected){
-    if(piece && isOwnPiece(piece)){
+    if(piece && isOwnTurnPiece(piece)){
       selected = {r:r,c:c};
-      draw();
+      drawBoard();
     }
     return;
   }
 
   if(selected.r===r && selected.c===c){
     selected = null;
-    draw();
+    drawBoard();
     return;
   }
 
-  var expected = puzzleMoves[currentStep];
-  if(!expected){
-    setStatus('Puzzle complete');
-    selected = null;
-    return;
-  }
-
-  if(expected.from.r===selected.r &&
-     expected.from.c===selected.c &&
-     expected.to.r===r &&
-     expected.to.c===c){
-
-    makeMove(expected.from,expected.to);
-    currentStep++;
-    turn = turn==='white' ? 'black' : 'white';
-    setStatus('Correct');
-  }
-  else{
-    setStatus('Wrong move');
+  if(isBasicLegalMove(selected,{r:r,c:c},board[selected.r][selected.c])){
+    executeMove(selected,{r:r,c:c});
   }
 
   selected = null;
-  draw();
+  drawBoard();
 }
 
-function makeMove(from,to){
+function executeMove(from,to){
+
+  moveHistory.push({
+    board: cloneBoard(board),
+    turn: turn
+  });
+
+  historyIndex++;
 
   var piece = board[from.r][from.c];
 
@@ -475,108 +480,93 @@ function makeMove(from,to){
   board[from.r][from.c] = '';
 
   lastMove = {
-    from:{r:from.r,c:from.c},
-    to:{r:to.r,c:to.c}
+    from: cloneBoard(from),
+    to: cloneBoard(to)
   };
+
+  turn = turn==='white' ? 'black' : 'white';
 }
 
-function restartPuzzle(){
-  if(!puzzleStartBoard) return;
-  board = cloneBoard(puzzleStartBoard);
-  currentStep = 0;
-  selected = null;
-  draw();
-  setStatus('Puzzle restarted');
+function prevMove(){
+
+  if(historyIndex<0) return;
+
+  var h = moveHistory[historyIndex];
+
+  board = cloneBoard(h.board);
+  turn = h.turn;
+
+  historyIndex--;
+
+  drawBoard();
 }
 
 function nextMove(){
 
-  if(currentStep >= puzzleMoves.length){
-    setStatus('End of line');
-    return;
-  }
+  if(solutionIndex>=solutionMoves.length) return;
 
-  var mv = puzzleMoves[currentStep];
-  makeMove(mv.from,mv.to);
-  currentStep++;
-  turn = turn==='white' ? 'black' : 'white';
-  draw();
+  executeMove(
+    solutionMoves[solutionIndex].from,
+    solutionMoves[solutionIndex].to
+  );
+
+  solutionIndex++;
+  drawBoard();
 }
 
-function prevMove(){
-  if(!puzzleStartBoard) return;
+function resetPuzzle(){
 
-  board = cloneBoard(puzzleStartBoard);
-  currentStep--;
+  if(!initialBoard) return;
 
-  if(currentStep<0) currentStep=0;
-
-  var i;
-  for(i=0;i<currentStep;i++){
-    makeMove(puzzleMoves[i].from,puzzleMoves[i].to);
-  }
-
-  draw();
-}
-
-function toggleSolveMode(){
-  solveMode = !solveMode;
+  board = cloneBoard(initialBoard);
+  turn = initialTurn;
   selected = null;
-  setStatus(solveMode ? 'Solve mode ON' : 'Solve mode OFF');
-  draw();
+  solutionMode = false;
+  solutionIndex = 0;
+  moveHistory = [];
+  historyIndex = -1;
+  lastMove = null;
+
+  drawBoard();
 }
 
-function loadPGN(){
+function startSolutionMode(){
+  solutionMode = true;
+  document.getElementById('info').innerHTML='Solution Mode';
+}
 
-  var txt = document.getElementById('pgnInput').value;
+function playSolutionMove(){
 
-  if(!txt){
-    setStatus('Paste PGN first');
+  if(solutionIndex>=solutionMoves.length){
+    solutionMode = false;
+    document.getElementById('info').innerHTML='Solution Complete';
     return;
   }
 
-  txt = txt.replace(/\[[^\]]*\]/g,'');
-  txt = txt.replace(/\{[^}]*\}/g,'');
-  txt = txt.replace(/\([^)]*\)/g,'');
-  txt = txt.replace(/\d+\./g,'');
-  txt = txt.replace(/1-0|0-1|1\/2-1\/2|\*/g,'');
+  nextMove();
+}
 
-  var toks = txt.split(/\s+/);
+function parseSquare(s){
+  return {
+    c: s.charCodeAt(0)-97,
+    r: 8-parseInt(s.charAt(1),10)
+  };
+}
 
-	standardSetup();
+function standardSetup(){
 
-	puzzleMoves = [];
-	currentStep = 0;
+  board = [
+    ['r','n','b','q','k','b','n','r'],
+    ['p','p','p','p','p','p','p','p'],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['P','P','P','P','P','P','P','P'],
+    ['R','N','B','Q','K','B','N','R']
+  ];
 
-	var originalBoard = cloneBoard(board);
-	var originalTurn = turn;
-
-	var i;
-	for(i=0;i<toks.length;i++){
-
-	  var san = toks[i];
-	  if(!san) continue;
-
-	  var mv = parseSAN(san);
-
-	  if(mv){
-		puzzleMoves.push(mv);
-		makeMove(mv.from,mv.to);
-		turn = turn==='white' ? 'black' : 'white';
-	  }
-	}
-
-	puzzleStartBoard = cloneBoard(originalBoard);
-
-	board = cloneBoard(puzzleStartBoard);
-	turn = originalTurn;
-	currentStep = 0;
-	selected = null;
-	lastMove = null;
-
-  draw();
-
-  setStatus('PGN loaded: ' + puzzleMoves.length + ' moves');
+  turn='white';
 }
 
 function parseSAN(san){
@@ -593,22 +583,18 @@ function parseSAN(san){
     return null;
   }
 
-  var tc = target.charCodeAt(0)-97;
-  var tr = 8-parseInt(target.charAt(1),10);
+  var to = parseSquare(target);
 
   var pieceType = 'P';
-  var first = san.charAt(0);
 
-  if(/[KQRBN]/.test(first)){
-    pieceType = first;
+  if(/[KQRBN]/.test(san.charAt(0))){
+    pieceType = san.charAt(0);
   }
 
-  var r,c,p;
+  for(var r=0;r<8;r++){
+    for(var c=0;c<8;c++){
 
-  for(r=0;r<8;r++){
-    for(c=0;c<8;c++){
-
-      p = board[r][c];
+      var p = board[r][c];
       if(!p) continue;
 
       if(turn==='white'){
@@ -617,10 +603,10 @@ function parseSAN(san){
         if(p!==pieceType.toLowerCase()) continue;
       }
 
-      if(canReach({r:r,c:c},{r:tr,c:tc},p)){
+      if(isBasicLegalMove({r:r,c:c},to,p)){
         return {
           from:{r:r,c:c},
-          to:{r:tr,c:tc}
+          to:to
         };
       }
     }
@@ -629,54 +615,66 @@ function parseSAN(san){
   return null;
 }
 
-function canReach(from,to,piece){
+function loadPGN(){
 
-  var dr = to.r-from.r;
-  var dc = to.c-from.c;
+  var txt = document.getElementById('pgnInput').value;
 
-  switch(piece.toLowerCase()){
-
-    case 'p':
-      var dir = piece==='P' ? -1 : 1;
-
-      if(dc===0 && dr===dir && !board[to.r][to.c]){
-        return true;
-      }
-
-      if(Math.abs(dc)===1 && dr===dir){
-        return true;
-      }
-
-      return false;
-
-    case 'n':
-      return (
-        (Math.abs(dr)===2 && Math.abs(dc)===1) ||
-        (Math.abs(dr)===1 && Math.abs(dc)===2)
-      );
-
-    case 'b':
-      return Math.abs(dr)===Math.abs(dc);
-
-    case 'r':
-      return dr===0 || dc===0;
-
-    case 'q':
-      return (
-        dr===0 ||
-        dc===0 ||
-        Math.abs(dr)===Math.abs(dc)
-      );
-
-    case 'k':
-      return Math.abs(dr)<=1 && Math.abs(dc)<=1;
+  if(!txt){
+    document.getElementById('info').innerHTML='Paste PGN first';
+    return;
   }
 
-  return false;
+  txt = txt.replace(/\[[^\]]*\]/g,'');
+  txt = txt.replace(/\{[^}]*\}/g,'');
+  txt = txt.replace(/\([^)]*\)/g,'');
+  txt = txt.replace(/\d+\./g,'');
+  txt = txt.replace(/1-0|0-1|1\/2-1\/2|\*/g,'');
+
+  var toks = txt.split(/\s+/);
+
+  standardSetup();
+
+  solutionMoves = [];
+  solutionIndex = 0;
+
+  for(var i=0;i<toks.length;i++){
+
+    var san = toks[i];
+    if(!san) continue;
+
+    var mv = parseSAN(san);
+
+    if(mv){
+      solutionMoves.push(mv);
+      board[mv.to.r][mv.to.c] = board[mv.from.r][mv.from.c];
+      board[mv.from.r][mv.from.c] = '';
+      turn = turn==='white' ? 'black' : 'white';
+    }
+  }
+
+  standardSetup();
+
+  initialBoard = cloneBoard(board);
+  initialTurn = 'white';
+  setupMode = false;
+  selected = null;
+  moveHistory = [];
+  historyIndex = -1;
+  lastMove = null;
+
+  document.getElementById('setupPanel').style.display='none';
+  document.getElementById('playPanel').style.display='block';
+  document.getElementById('info').innerHTML =
+    'PGN Loaded (' + solutionMoves.length + ' moves)';
+
+  drawBoard();
 }
 
-standardSetup();
+initEmptyBoard();
+drawBoard();
 
 </script>
 </body>
 </html>
+
+	
