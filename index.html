@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kobo Chess Puzzle</title>
+
+<style>
+body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 5px;
+  font-family: sans-serif;
+  text-align: center;
+  background: #fff;
+  color: #000;
+}
+
+#info {
+  font-size: 18px;
+  margin: 8px;
+  min-height: 24px;
+}
+
+#board table {
+  border-collapse: collapse;
+  margin: 0 auto;
+  border: 2px solid #000;
+}
+
+#board td {
+  width: 42px;
+  height: 42px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #666;
+  padding: 0;
+  cursor: pointer;
+}
+
+.light { background: #eee; }
+.dark  { background: #aaa; }
+
+.selected {
+  outline: 2px solid #222;
+}
+
+.move {
+  box-shadow: inset 0 0 0 1px #444;
+}
+
+.lastfrom {
+  box-shadow: inset 0 0 0 2px #666;
+}
+
+.lastto {
+  box-shadow: inset 0 0 0 2px #222;
+}
+
+.checking {
+  outline: 2px dotted #000;
+}
+
+.mate {
+  box-shadow: inset 0 0 8px 3px #000;
+}
+
+button {
+  font-size: 16px;
+  padding: 6px 10px;
+  margin: 4px;
+}
+
+#promotion {
+  display: none;
+  margin: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Kobo Chess Puzzle</h2>
+
+<div id="info"></div>
+<div id="board"></div>
+<div id="promotion"></div>
+
+<div>
+  <button onclick="resign()">Resign</button>
+  <button onclick="offerDraw()">Offer Draw</button>
+  <button onclick="flipBoard()">Flip</button>
+  <button id="acceptDrawBtn" onclick="acceptDraw()" style="display:none;">
+    Accept Draw
+  </button>
+  <button onclick="resetGame()">Reset</button>
+</div>
+
+<script>
+
+var pieces = {
+
+K: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/>' +
+   '<line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/>' +
+   '<path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+
+k: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/>' +
+   '<line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/>' +
+   '<path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+
+Q: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<path d="M17 18 L43 18 L40 32 L20 32 Z"/>' +
+   '<rect x="19" y="34" width="22" height="12"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '<line x1="18" y1="18" x2="14" y2="10"/>' +
+   '<line x1="24" y1="18" x2="22" y2="8"/>' +
+   '<line x1="30" y1="18" x2="30" y2="6"/>' +
+   '<line x1="36" y1="18" x2="38" y2="8"/>' +
+   '<line x1="42" y1="18" x2="46" y2="10"/>' +
+   '<circle cx="14" cy="10" r="2.5"/>' +
+   '<circle cx="22" cy="8" r="2.5"/>' +
+   '<circle cx="30" cy="6" r="2.5"/>' +
+   '<circle cx="38" cy="8" r="2.5"/>' +
+   '<circle cx="46" cy="10" r="2.5"/>' +
+   '</g></svg>',
+
+q: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<path d="M17 18 L43 18 L40 32 L20 32 Z"/>' +
+   '<rect x="19" y="34" width="22" height="12"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '<line x1="18" y1="18" x2="14" y2="10"/>' +
+   '<line x1="24" y1="18" x2="22" y2="8"/>' +
+   '<line x1="30" y1="18" x2="30" y2="6"/>' +
+   '<line x1="36" y1="18" x2="38" y2="8"/>' +
+   '<line x1="42" y1="18" x2="46" y2="10"/>' +
+   '<circle cx="14" cy="10" r="2.5" fill="black"/>' +
+   '<circle cx="22" cy="8" r="2.5" fill="black"/>' +
+   '<circle cx="30" cy="6" r="2.5" fill="black"/>' +
+   '<circle cx="38" cy="8" r="2.5" fill="black"/>' +
+   '<circle cx="46" cy="10" r="2.5" fill="black"/>' +
+   '</g></svg>',
+
+R: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<rect x="16" y="12" width="8" height="6"/>' +
+   '<rect x="26" y="12" width="8" height="6"/>' +
+   '<rect x="36" y="12" width="8" height="6"/>' +
+   '<rect x="16" y="18" width="28" height="6"/>' +
+   '<rect x="20" y="24" width="20" height="22"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+
+r: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<rect x="16" y="12" width="8" height="6"/>' +
+   '<rect x="26" y="12" width="8" height="6"/>' +
+   '<rect x="36" y="12" width="8" height="6"/>' +
+   '<rect x="16" y="18" width="28" height="6"/>' +
+   '<rect x="20" y="24" width="20" height="22"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+   
+B: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/>' +
+   '<line x1="27" y1="14" x2="33" y2="22"/>' +
+   '<path d="M22 33 L38 33 L42 47 L18 47 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+
+b: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/>' +
+   '<line x1="27" y1="14" x2="33" y2="22" stroke="white"/>' +
+   '<path d="M22 33 L38 33 L42 47 L18 47 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+
+N: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g transform="translate(6,7) scale(1.48)" fill="white" stroke="black" stroke-width="1.15">' +
+   '<path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/>' +
+   '<rect x="6.5" y="27.2" width="18.5" height="4.2"/>' +
+   '</g></svg>',
+
+n: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g transform="translate(6,7) scale(1.48)" fill="black" stroke="black" stroke-width="1.15">' +
+   '<path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/>' +
+   '<rect x="6.5" y="27.2" width="18.5" height="4.2"/>' +
+   '</g></svg>',
+
+P: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<circle cx="30" cy="15" r="7"/>' +
+   '<path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+
+p: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<circle cx="30" cy="15" r="7"/>' +
+   '<path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>'
+};
+
+var board;
+var selected = null;
+var turn = 'white';
+var enPassant = null;
+var pendingPromotion = null;
+var moved = {};
+var gameOver = false;
+var drawOfferedBy = null;
+var flipped = false;
+var statusMessage = '';
+var lastMove = null;
+var checkmateSquare = null;
+var checkingPieceSquare = null;
+
+function cloneBoard(b){
+  return JSON.parse(JSON.stringify(b));
+}
+
+function sign(x){
+  return x > 0 ? 1 : x < 0 ? -1 : 0;
+}
+
+function capitalize(s){
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function initBoard(){
+  board = [
+    ['r','n','b','q','k','b','n','r'],
+    ['p','p','p','p','p','p','p','p'],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['','','','','','','',''],
+    ['P','P','P','P','P','P','P','P'],
+    ['R','N','B','Q','K','B','N','R']
+  ];
+
+  selected = null;
+  turn = 'white';
+  enPassant = null;
+  pendingPromotion = null;
+  moved = {};
+  gameOver = false;
+  drawOfferedBy = null;
+  flipped = false;
+  statusMessage = '';
+  lastMove = null;
+  checkmateSquare = null;
+  checkingPieceSquare = null;
+
+  document.getElementById('acceptDrawBtn').style.display='none';
+
+  draw();
+}
+
+function isOwnPiece(p){
+  if(turn === 'white') return p === p.toUpperCase();
+  return p === p.toLowerCase();
+}
+
+function draw(){
+  var el = document.getElementById('board');
+  el.innerHTML = '';
+
+  var tbl = document.createElement('table');
+  var legalMoves = [];
+
+  if(selected){
+    legalMoves = getLegalMoves(selected);
+  }
+  
+  for(var r=0;r<8;r++){
+    var tr = document.createElement('tr');
+
+    for(var c=0;c<8;c++){
+
+      var rr = flipped ? 7-r : r;
+      var cc = flipped ? 7-c : c;
+
+      var td = document.createElement('td');
+      td.className = ((rr+cc)%2) ? 'dark' : 'light';
+
+      if(lastMove){
+        if(lastMove.from.r===rr && lastMove.from.c===cc){
+          td.className += ' lastfrom';
+        }
+        if(lastMove.to.r===rr && lastMove.to.c===cc){
+          td.className += ' lastto';
+        }
+      }
+
+      if(checkmateSquare &&
+         checkmateSquare.r===rr &&
+         checkmateSquare.c===cc){
+        td.className += ' mate';
+      }
+
+      if(checkingPieceSquare &&
+         checkingPieceSquare.r===rr &&
+         checkingPieceSquare.c===cc){
+        td.className += ' checking';
+      }
+
+      if(selected &&
+         selected.r===rr &&
+         selected.c===cc){
+        td.className += ' selected';
+      }
+
+      for(var i=0;i<legalMoves.length;i++){
+        if(legalMoves[i].r===rr && legalMoves[i].c===cc){
+          td.className += ' move';
+          break;
+        }
+      }
+
+      if(board[rr][cc]){
+        td.innerHTML = pieces[board[rr][cc]];
+      }
+
+      (function(x,y){
+        td.onclick = function(){
+          handleTap(x,y);
+        };
+      })(rr,cc);
+
+      tr.appendChild(td);
+    }
+
+    tbl.appendChild(tr);
+  }
+
+  el.appendChild(tbl);
+
+  var msg = statusMessage ? statusMessage : ('Turn: ' + capitalize(turn));
+
+  if(!gameOver && isCheck(turn)){
+    msg = 'Check! ' + msg;
+  }
+
+  if(drawOfferedBy && !gameOver){
+    msg += ' | Draw offered by ' + capitalize(drawOfferedBy);
+  }
+
+  document.getElementById('info').innerHTML = msg;
+}
+
+function getLegalMoves(from){
+  var moves = [];
+  for(var r=0;r<8;r++){
+    for(var c=0;c<8;c++){
+      if(isValidMove(from,{r:r,c:c}) &&
+         isLegalMove(from,{r:r,c:c})){
+        moves.push({r:r,c:c});
+      }
+    }
+  }
+  return moves;
+}
+
+function straightClear(r1,c1,r2,c2,b){
+  if(r1!==r2 && c1!==c2) return false;
+
+  var dr = sign(r2-r1);
+  var dc = sign(c2-c1);
+  var r = r1+dr;
+  var c = c1+dc;
+
+  while(r!==r2 || c!==c2){
+    if(b[r][c]) return false;
+    r += dr;
+    c += dc;
+  }
+
+  return true;
+}
+
+function diagonalClear(r1,c1,r2,c2,b){
+  if(Math.abs(r2-r1)!==Math.abs(c2-c1)) return false;
+
+  var dr = sign(r2-r1);
+  var dc = sign(c2-c1);
+  var r = r1+dr;
+  var c = c1+dc;
+
+  while(r!==r2){
+    if(b[r][c]) return false;
+    r += dr;
+    c += dc;
+  }
+
+  return true;
+}
+
+function findKing(color,b){
+  for(var r=0;r<8;r++){
+    for(var c=0;c<8;c++){
+      if(b[r][c] === (color==='white'?'K':'k')){
+        return {r:r,c:c};
+      }
+    }
+  }
+  return null;
+}
+
+function isSquareAttacked(r,c,byColor,b){
+  for(var i=0;i<8;i++){
+    for(var j=0;j<8;j++){
+
+      var p = b[i][j];
+      if(!p) continue;
+
+      var isWhite = p===p.toUpperCase();
+
+      if(byColor==='white' && !isWhite) continue;
+      if(byColor==='black' && isWhite) continue;
+
+      var dr = r-i;
+      var dc = c-j;
+
+      switch(p.toLowerCase()){
+
+        case 'p':
+          var dir = isWhite ? -1 : 1;
+          if(dr===dir && Math.abs(dc)===1) return true;
+          break;
+
+        case 'n':
+          if(
+            (Math.abs(dr)===2 && Math.abs(dc)===1) ||
+            (Math.abs(dr)===1 && Math.abs(dc)===2)
+          ) return true;
+          break;
+
+        case 'b':
+          if(diagonalClear(i,j,r,c,b)) return true;
+          break;
+
+        case 'r':
+          if(straightClear(i,j,r,c,b)) return true;
+          break;
+
+        case 'q':
+          if(diagonalClear(i,j,r,c,b) ||
+             straightClear(i,j,r,c,b)) return true;
+          break;
+
+        case 'k':
+          if(Math.abs(dr)<=1 && Math.abs(dc)<=1) return true;
+          break;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isCheck(color,b){
+  if(!b) b = board;
+  var king = findKing(color,b);
+  if(!king) return false;
+
+  return isSquareAttacked(
+    king.r,
+    king.c,
+    color==='white' ? 'black' : 'white',
+    b
+  );
+}
+
+function isLegalMove(from,to){
+  var temp = cloneBoard(board);
+  var piece = temp[from.r][from.c];
+
+  if(piece.toLowerCase()==='p' &&
+     enPassant &&
+     to.r===enPassant.r &&
+     to.c===enPassant.c){
+    temp[from.r][to.c]='';
+  }
+
+  temp[to.r][to.c] = piece;
+  temp[from.r][from.c] = '';
+
+  if(piece==='P' && to.r===0) temp[to.r][to.c]='Q';
+  if(piece==='p' && to.r===7) temp[to.r][to.c]='q';
+
+  var color = piece===piece.toUpperCase() ? 'white' : 'black';
+
+  return !isCheck(color,temp);
+}
+
+function isValidMove(from,to){
+
+  var piece = board[from.r][from.c];
+  var target = board[to.r][to.c];
+
+  if(target && isOwnPiece(target)) return false;
+
+  var dr = to.r-from.r;
+  var dc = to.c-from.c;
+
+  switch(piece.toLowerCase()){
+
+    case 'p':
+      var dir = piece==='P' ? -1 : 1;
+
+      if(dc===0 && !target && dr===dir) return true;
+
+      if(dc===0 && !target && dr===2*dir){
+        if((piece==='P' && from.r===6) ||
+           (piece==='p' && from.r===1)){
+          if(!board[from.r+dir][from.c]) return true;
+        }
+      }
+
+      if(Math.abs(dc)===1 && dr===dir){
+        if(target) return true;
+        if(enPassant &&
+           to.r===enPassant.r &&
+           to.c===enPassant.c){
+          return true;
+        }
+      }
+
+      return false;
+
+    case 'r':
+      return straightClear(from.r,from.c,to.r,to.c,board);
+
+    case 'b':
+      return diagonalClear(from.r,from.c,to.r,to.c,board);
+
+    case 'q':
+      return straightClear(from.r,from.c,to.r,to.c,board) ||
+             diagonalClear(from.r,from.c,to.r,to.c,board);
+
+    case 'n':
+      return (
+        (Math.abs(dr)===2 && Math.abs(dc)===1) ||
+        (Math.abs(dr)===1 && Math.abs(dc)===2)
+      );
+
+    case 'k':
+      if(Math.abs(dr)<=1 && Math.abs(dc)<=1) return true;
+      return false;
+  }
+
+  return false;
+}
+
+function handleTap(r,c){
+
+  if(gameOver || pendingPromotion) return;
+
+  var piece = board[r][c];
+
+  if(!selected){
+    if(piece && isOwnPiece(piece)){
+      selected = {r:r,c:c};
+    }
+  }
+  else{
+    if(piece && isOwnPiece(piece)){
+      selected = {r:r,c:c};
+    }
+    else if(selected.r===r && selected.c===c){
+      selected = null;
+    }
+    else{
+      if(isValidMove(selected,{r:r,c:c}) &&
+         isLegalMove(selected,{r:r,c:c})){
+
+        makeMove(selected,{r:r,c:c});
+
+        if(!pendingPromotion){
+          turn = turn==='white' ? 'black' : 'white';
+
+          if(isCheck(turn)){
+            checkingPieceSquare = findCheckingPiece(turn);
+          } else {
+            checkingPieceSquare = null;
+          }
+        }
+      }
+
+      selected = null;
+    }
+  }
+
+  draw();
+}
+
+function makeMove(from,to){
+
+  var piece = board[from.r][from.c];
+
+  board[to.r][to.c] = piece;
+  board[from.r][from.c] = '';
+
+  lastMove = {
+    from:{r:from.r,c:from.c},
+    to:{r:to.r,c:to.c}
+  };
+
+  if(piece==='P' && to.r===0){
+    triggerPromotion(to,'white');
+    return;
+  }
+
+  if(piece==='p' && to.r===7){
+    triggerPromotion(to,'black');
+    return;
+  }
+}
+
+function triggerPromotion(pos,color){
+  pendingPromotion = {pos:pos,color:color};
+  showPromotion(color);
+}
+
+function showPromotion(color){
+
+  var el = document.getElementById('promotion');
+  el.innerHTML = 'Choose Promotion:<br>';
+
+  var opts = ['q','r','b','n'];
+
+  for(var i=0;i<opts.length;i++){
+
+    (function(opt){
+      var btn = document.createElement('button');
+      btn.innerHTML = pieces[color==='white' ? opt.toUpperCase() : opt];
+      btn.onclick = function(){
+        applyPromotion(color==='white' ? opt.toUpperCase() : opt);
+      };
+      el.appendChild(btn);
+    })(opts[i]);
+  }
+
+  el.style.display='block';
+}
+
+function applyPromotion(piece){
+  var pos = pendingPromotion.pos;
+  board[pos.r][pos.c] = piece;
+  pendingPromotion = null;
+  document.getElementById('promotion').style.display='none';
+  turn = turn==='white' ? 'black' : 'white';
+  draw();
+}
+
+function findCheckingPiece(color){
+  var king = findKing(color,board);
+  if(!king) return null;
+
+  var opp = color==='white' ? 'black' : 'white';
+
+  for(var r=0;r<8;r++){
+    for(var c=0;c<8;c++){
+
+      var p = board[r][c];
+      if(!p) continue;
+
+      var isWhite = p===p.toUpperCase();
+
+      if(opp==='white' && !isWhite) continue;
+      if(opp==='black' && isWhite) continue;
+
+      if(isValidMove({r:r,c:c},king)){
+        return {r:r,c:c};
+      }
+    }
+  }
+
+  return null;
+}
+
+function resign(){
+  if(gameOver) return;
+  gameOver = true;
+  statusMessage =
+    (turn==='white'?'Black':'White') +
+    ' wins (resignation)';
+  draw();
+}
+
+function offerDraw(){
+  drawOfferedBy = turn;
+  document.getElementById('acceptDrawBtn').style.display='inline';
+  draw();
+}
+
+function acceptDraw(){
+  gameOver = true;
+  statusMessage = 'Draw agreed';
+  draw();
+}
+
+function flipBoard(){
+  flipped = !flipped;
+  draw();
+}
+
+function resetGame(){
+  initBoard();
+}
+
+initBoard();
+
+</script>
+</body>
+</html>
