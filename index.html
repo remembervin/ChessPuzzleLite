@@ -524,48 +524,36 @@ function toggleSolveMode(){
   draw();
 }
 
-function loadPGN(){
+standardSetup();
 
-  var txt = document.getElementById('pgnInput').value;
+puzzleMoves = [];
+currentStep = 0;
 
-  if(!txt){
-    setStatus('Paste PGN first');
-    return;
+var originalBoard = cloneBoard(board);
+var originalTurn = turn;
+
+var i;
+for(i=0;i<toks.length;i++){
+
+  var san = toks[i];
+  if(!san) continue;
+
+  var mv = parseSAN(san);
+
+  if(mv){
+    puzzleMoves.push(mv);
+    makeMove(mv.from,mv.to);
+    turn = turn==='white' ? 'black' : 'white';
   }
+}
 
-  txt = txt.replace(/\[[^\]]*\]/g,'');
-  txt = txt.replace(/\{[^}]*\}/g,'');
-  txt = txt.replace(/\([^)]*\)/g,'');
-  txt = txt.replace(/\d+\./g,'');
-  txt = txt.replace(/1-0|0-1|1\/2-1\/2|\*/g,'');
+puzzleStartBoard = cloneBoard(originalBoard);
 
-  var toks = txt.split(/\s+/);
-
-  standardSetup();
-
-  puzzleMoves = [];
-  currentStep = 0;
-
-  var i;
-  for(i=0;i<toks.length;i++){
-
-    var san = toks[i];
-    if(!san) continue;
-
-    var mv = parseSAN(san);
-
-    if(mv){
-      puzzleMoves.push(mv);
-      makeMove(mv.from,mv.to);
-      turn = turn==='white' ? 'black' : 'white';
-    }
-  }
-
-  puzzleStartBoard = cloneBoard(board);
-
-  board = cloneBoard(puzzleStartBoard);
-  currentStep = 0;
-  turn = document.getElementById('sideToMove').value;
+board = cloneBoard(puzzleStartBoard);
+turn = originalTurn;
+currentStep = 0;
+selected = null;
+lastMove = null;
 
   draw();
 
