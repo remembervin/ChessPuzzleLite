@@ -210,7 +210,8 @@ q:'<svg viewBox="0 0 60 60" width="32" height="32">' +
 '<circle cx="38" cy="8" r="2.5"/>' +
 '<circle cx="46" cy="10" r="2.5"/>' +
 '</g></svg>',
-  R:'<svg viewBox="0 0 60 60" width="32" height="32">' +
+
+R:'<svg viewBox="0 0 60 60" width="32" height="32">' +
 '<g fill="white" stroke="black" stroke-width="2">' +
 '<rect x="16" y="12" width="8" height="6"/>' +
 '<rect x="26" y="12" width="8" height="6"/>' +
@@ -398,7 +399,8 @@ function draw(){
 
   el.appendChild(tbl);
 }
-  function isWhitePiece(p){
+
+function isWhitePiece(p){
   return p && p===p.toUpperCase();
 }
 
@@ -524,36 +526,53 @@ function toggleSolveMode(){
   draw();
 }
 
-standardSetup();
+function loadPGN(){
 
-puzzleMoves = [];
-currentStep = 0;
+  var txt = document.getElementById('pgnInput').value;
 
-var originalBoard = cloneBoard(board);
-var originalTurn = turn;
-
-var i;
-for(i=0;i<toks.length;i++){
-
-  var san = toks[i];
-  if(!san) continue;
-
-  var mv = parseSAN(san);
-
-  if(mv){
-    puzzleMoves.push(mv);
-    makeMove(mv.from,mv.to);
-    turn = turn==='white' ? 'black' : 'white';
+  if(!txt){
+    setStatus('Paste PGN first');
+    return;
   }
-}
 
-puzzleStartBoard = cloneBoard(originalBoard);
+  txt = txt.replace(/\[[^\]]*\]/g,'');
+  txt = txt.replace(/\{[^}]*\}/g,'');
+  txt = txt.replace(/\([^)]*\)/g,'');
+  txt = txt.replace(/\d+\./g,'');
+  txt = txt.replace(/1-0|0-1|1\/2-1\/2|\*/g,'');
 
-board = cloneBoard(puzzleStartBoard);
-turn = originalTurn;
-currentStep = 0;
-selected = null;
-lastMove = null;
+  var toks = txt.split(/\s+/);
+
+	standardSetup();
+
+	puzzleMoves = [];
+	currentStep = 0;
+
+	var originalBoard = cloneBoard(board);
+	var originalTurn = turn;
+
+	var i;
+	for(i=0;i<toks.length;i++){
+
+	  var san = toks[i];
+	  if(!san) continue;
+
+	  var mv = parseSAN(san);
+
+	  if(mv){
+		puzzleMoves.push(mv);
+		makeMove(mv.from,mv.to);
+		turn = turn==='white' ? 'black' : 'white';
+	  }
+	}
+
+	puzzleStartBoard = cloneBoard(originalBoard);
+
+	board = cloneBoard(puzzleStartBoard);
+	turn = originalTurn;
+	currentStep = 0;
+	selected = null;
+	lastMove = null;
 
   draw();
 
