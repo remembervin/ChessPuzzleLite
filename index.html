@@ -3,144 +3,171 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vins Kobo Chess Puzzle Lite</title>
+<title>Kobo Chess Puzzle Studio ES5</title>
 
 <style>
-body{
-  max-width:760px;
-  margin:0 auto;
-  padding:4px;
-  font-family:sans-serif;
-  text-align:center;
-  background:#fff;
-  color:#000;
+body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 5px;
+  font-family: sans-serif;
+  text-align: center;
+  background: #fff;
+  color: #000;
 }
 
-h2{
-  margin:6px 0;
-  font-size:22px;
+h2 {
+  margin: 8px 0;
 }
 
-#info{
-  min-height:24px;
-  margin:6px 0;
-  font-size:16px;
+#info {
+  font-size: 18px;
+  margin: 8px;
+  min-height: 24px;
 }
 
-#board table{
-  border-collapse:collapse;
-  margin:0 auto;
-  border:2px solid #000;
+#board {
+  margin: 10px auto;
 }
 
-#board td{
-  width:40px;
-  height:40px;
-  padding:0;
-  text-align:center;
-  vertical-align:middle;
-  border:1px solid #666;
-  cursor:pointer;
+#board table {
+  border-collapse: collapse;
+  margin: 0 auto;
+  border: 2px solid #000;
 }
 
-.light{ background:#eee; }
-.dark{ background:#aaa; }
-
-.selected{
-  outline:2px solid #000;
+#board td {
+  width: 42px;
+  height: 42px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0;
+  border: 1px solid #666;
+  cursor: pointer;
+  padding: 0;
 }
 
-.move{
+#board img {
+  width: 30px;
+  height: 30px;
+  display: block;
+  margin: auto;
+}
+
+.light {
+  background: #eee;
+}
+
+.dark {
+  background: #aaa;
+}
+
+.selected {
+  outline: 2px solid #222;
+}
+
+.move {
   box-shadow: inset 0 0 0 1px #444;
 }
 
-.capture{
-  outline:2px solid #000;
+.lastfrom {
+  box-shadow: inset 0 0 0 2px #666;
 }
 
-.lastmove{
-  box-shadow: inset 0 0 0 2px #444;
+.lastto {
+  box-shadow: inset 0 0 0 2px #222;
 }
 
-.lastmoveTo{
-  box-shadow: inset 0 0 0 3px #000;
+.checking {
+  outline: 3px dotted #000;
 }
 
-.checkmateGlow{
-  box-shadow: inset 0 0 8px 4px #000;
+.mate {
+  box-shadow: inset 0 0 10px 4px #000;
 }
 
-.checkingPiece{
-  outline:2px dotted #000;
+.whitePiece {
+  font-weight: normal;
+  text-shadow: 0 0 1px #000;
 }
 
-button{
-  margin:3px;
-  font-size:15px;
+.blackPiece {
+  font-weight: bold;
 }
 
-input{
-  width:90%;
-  font-size:15px;
+.controls {
+  margin: 10px;
 }
 
-svg{
-  width:32px;
-  height:32px;
-  display:inline-block;
+.controls button {
+  font-size: 16px;
+  padding: 6px 10px;
+  margin: 4px;
+}
+
+input {
+  width: 85%;
+  font-size: 14px;
+  padding: 4px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Vins Kobo Chess Puzzle Lite</h2>
+<h2>Kobo Chess Puzzle Studio</h2>
 
-<div id="info">Load Puzzle or Setup board manually!</div>
-
+<div id="info">Setup Mode</div>
 <div id="board"></div>
 
-<div style="margin:10px 0;">
+<div class="controls">
+
   <button onclick="loadPuzzleFile()">Load Puzzle</button>
-  <button onclick="loadNextPuzzle()">Next</button>
+  <button onclick="loadNextPuzzle()">Next Puzzle</button>
+
   <button onclick="prevMove()">◀</button>
   <button onclick="nextMove()">▶</button>
-  <button onclick="resetPuzzle()">Reset</button>
+
   <button onclick="startSolutionMode()">💡</button>
-  <button onclick="flipPieces()">Flip</button>
+  <button onclick="flipBoard()">Flip</button>
+  <button onclick="resetPuzzle()">Reset</button>
+  <button onclick="backToSetup()">Edit</button>
+
 </div>
 
-<div style="margin:10px 0;">
+<div class="controls">
 
-  <div>
-    <button onclick="selectPiece('K')">WK</button>
-    <button onclick="selectPiece('Q')">WQ</button>
-    <button onclick="selectPiece('R')">WR</button>
-    <button onclick="selectPiece('B')">WB</button>
-    <button onclick="selectPiece('N')">WN</button>
-    <button onclick="selectPiece('P')">WP</button>
-  </div>
+White:
+<button onclick="selectPiece('K')">WK</button>
+<button onclick="selectPiece('Q')">WQ</button>
+<button onclick="selectPiece('R')">WR</button>
+<button onclick="selectPiece('B')">WB</button>
+<button onclick="selectPiece('N')">WN</button>
+<button onclick="selectPiece('P')">WP</button>
 
-  <div>
-    <button onclick="selectPiece('k')">BK</button>
-    <button onclick="selectPiece('q')">BQ</button>
-    <button onclick="selectPiece('r')">BR</button>
-    <button onclick="selectPiece('b')">BB</button>
-    <button onclick="selectPiece('n')">BN</button>
-    <button onclick="selectPiece('p')">BP</button>
-  </div>
+<br>
 
-  <div>
-    <button onclick="clearSquare()">Clear</button>
-    <button onclick="clearBoard()">Clear Board</button>
-    <button onclick="setTurn('white')">White to Play</button>
-    <button onclick="setTurn('black')">Black to Play</button>
-    <button onclick="doneSetup()">GO</button>
-    <button onclick="backToSetup()">Edit</button>
-  </div>
+Black:
+<button onclick="selectPiece('k')">BK</button>
+<button onclick="selectPiece('q')">BQ</button>
+<button onclick="selectPiece('r')">BR</button>
+<button onclick="selectPiece('b')">BB</button>
+<button onclick="selectPiece('n')">BN</button>
+<button onclick="selectPiece('p')">BP</button>
+
+<br>
+
+<button onclick="selectPiece('')">Clear Square</button>
+<button onclick="clearBoard()">Clear Board</button>
+
+<button onclick="setTurn('white')">White to Play</button>
+<button onclick="setTurn('black')">Black to Play</button>
+
+<button onclick="doneSetup()">GO</button>
+
 </div>
 
-<div style="margin-top:16px; padding-top:10px; border-top:1px solid #aaa;">
+<div class="controls">
   <input id="pgnInput" placeholder="Paste Kindle/Lichess puzzle here">
   <br>
   <button onclick="loadPGN()">Load PGN Puzzle</button>
@@ -148,74 +175,186 @@ svg{
 
 <script>
 
-const pieces = {
+var pieces = {
+K: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/>' +
+   '<line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/>' +
+   '<path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
 
-K:'<svg viewBox="0 0 60 60"><g fill="white" stroke="black" stroke-width="2"><line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/><line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/><path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+Q: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<path d="M17 18 L43 18 L40 32 L20 32 Z"/>' +
+   '<rect x="19" y="34" width="22" height="12"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '<line x1="18" y1="18" x2="14" y2="10"/>' +
+   '<line x1="24" y1="18" x2="22" y2="8"/>' +
+   '<line x1="30" y1="18" x2="30" y2="6"/>' +
+   '<line x1="36" y1="18" x2="38" y2="8"/>' +
+   '<line x1="42" y1="18" x2="46" y2="10"/>' +
+   '<circle cx="14" cy="10" r="2.5"/>' +
+   '<circle cx="22" cy="8" r="2.5"/>' +
+   '<circle cx="30" cy="6" r="2.5"/>' +
+   '<circle cx="38" cy="8" r="2.5"/>' +
+   '<circle cx="46" cy="10" r="2.5"/>' +
+   '</g></svg>',
 
-k:'<svg viewBox="0 0 60 60"><g fill="black" stroke="black" stroke-width="2"><line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/><line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/><path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+R: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<rect x="16" y="12" width="8" height="6"/>' +
+   '<rect x="26" y="12" width="8" height="6"/>' +
+   '<rect x="36" y="12" width="8" height="6"/>' +
+   '<rect x="16" y="18" width="28" height="6"/>' +
+   '<rect x="20" y="24" width="20" height="22"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+	
+B: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<path d="M30 6 ' +
+           'L34 11 ' +
+           'C38 15,38 22,34 27 ' +
+           'L36 31 L24 31 L26 27 ' +
+           'C22 22,22 15,26 11 Z"/>' +
+   '<line x1="27" y1="14" x2="33" y2="22"/>' +
+   '<path d="M22 33 L38 33 L42 47 L18 47 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
+	
 
-Q:'<svg viewBox="0 0 60 60"><g fill="white" stroke="black" stroke-width="2"><path d="M17 18 L43 18 L40 32 L20 32 Z"/><rect x="19" y="34" width="22" height="12"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+P: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="white" stroke="black" stroke-width="2">' +
+   '<circle cx="30" cy="15" r="7"/>' +
+   '<path d="M24 24 ' +
+           'L36 24 ' +
+           'L38 29 ' +
+           'L36 33 ' +
+           'L40 46 ' +
+           'L20 46 ' +
+           'L24 33 ' +
+           'L22 29 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
 
-q:'<svg viewBox="0 0 60 60"><g fill="black" stroke="black" stroke-width="2"><path d="M17 18 L43 18 L40 32 L20 32 Z"/><rect x="19" y="34" width="22" height="12"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+N: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g transform="translate(6,7) scale(1.48)" fill="white" stroke="black" stroke-width="1.15">' +
+   '<path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/>' +
+   '<rect x="6.5" y="27.2" width="18.5" height="4.2"/>' +
+   '</g></svg>',
 
-R:'<svg viewBox="0 0 60 60"><g fill="white" stroke="black" stroke-width="2"><rect x="16" y="12" width="8" height="6"/><rect x="26" y="12" width="8" height="6"/><rect x="36" y="12" width="8" height="6"/><rect x="16" y="18" width="28" height="6"/><rect x="20" y="24" width="20" height="22"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+k: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<line x1="30" y1="4" x2="30" y2="17" stroke-width="3"/>' +
+   '<line x1="22" y1="10" x2="38" y2="10" stroke-width="3"/>' +
+   '<path d="M20 20 L40 20 L37 30 L43 48 L17 48 L23 30 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
 
-r:'<svg viewBox="0 0 60 60"><g fill="black" stroke="black" stroke-width="2"><rect x="16" y="12" width="8" height="6"/><rect x="26" y="12" width="8" height="6"/><rect x="36" y="12" width="8" height="6"/><rect x="16" y="18" width="28" height="6"/><rect x="20" y="24" width="20" height="22"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+q: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<path d="M17 18 L43 18 L40 32 L20 32 Z"/>' +
+   '<rect x="19" y="34" width="22" height="12"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '<line x1="18" y1="18" x2="14" y2="10"/>' +
+   '<line x1="24" y1="18" x2="22" y2="8"/>' +
+   '<line x1="30" y1="18" x2="30" y2="6"/>' +
+   '<line x1="36" y1="18" x2="38" y2="8"/>' +
+   '<line x1="42" y1="18" x2="46" y2="10"/>' +
+   '<circle cx="14" cy="10" r="2.5" fill="black"/>' +
+   '<circle cx="22" cy="8" r="2.5" fill="black"/>' +
+   '<circle cx="30" cy="6" r="2.5" fill="black"/>' +
+   '<circle cx="38" cy="8" r="2.5" fill="black"/>' +
+   '<circle cx="46" cy="10" r="2.5" fill="black"/>' +
+   '</g></svg>',
 
-B:'<svg viewBox="0 0 60 60"><g fill="white" stroke="black" stroke-width="2"><path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/><line x1="27" y1="14" x2="33" y2="22"/><path d="M22 33 L38 33 L42 47 L18 47 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+r: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<rect x="16" y="12" width="8" height="6" fill="black"/>' +
+   '<rect x="26" y="12" width="8" height="6" fill="black"/>' +
+   '<rect x="36" y="12" width="8" height="6" fill="black"/>' +
+   '<rect x="16" y="18" width="28" height="6"/>' +
+   '<rect x="20" y="24" width="20" height="22"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
 
-b:'<svg viewBox="0 0 60 60"><g fill="black" stroke="black" stroke-width="2"><path d="M30 6 L34 11 C38 15,38 22,34 27 L36 31 L24 31 L26 27 C22 22,22 15,26 11 Z"/><line x1="27" y1="14" x2="33" y2="22" stroke="white"/><path d="M22 33 L38 33 L42 47 L18 47 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
+b: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<path d="M30 6 ' +
+           'L34 11 ' +
+           'C38 15,38 22,34 27 ' +
+           'L36 31 L24 31 L26 27 ' +
+           'C22 22,22 15,26 11 Z"/>' +
+   '<line x1="27" y1="14" x2="33" y2="22" stroke="white"/>' +
+   '<path d="M22 33 L38 33 L42 47 L18 47 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
 
-N:'<svg viewBox="0 0 60 60"><g transform="translate(6,7) scale(1.48)" fill="white" stroke="black" stroke-width="1.15"><path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791z"/><rect x="6.5" y="27.2" width="18.5" height="4.2"/></g></svg>',
-	n:'<svg viewBox="0 0 60 60"><g transform="translate(6,7) scale(1.48)" fill="black" stroke="black" stroke-width="1.15"><path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791z"/><rect x="6.5" y="27.2" width="18.5" height="4.2"/></g></svg>',
+p: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g fill="black" stroke="black" stroke-width="2">' +
+   '<circle cx="30" cy="15" r="7"/>' +
+   '<path d="M24 24 ' +
+           'L36 24 ' +
+           'L38 29 ' +
+           'L36 33 ' +
+           'L40 46 ' +
+           'L20 46 ' +
+           'L24 33 ' +
+           'L22 29 Z"/>' +
+   '<rect x="14" y="50" width="32" height="4"/>' +
+   '</g></svg>',
 
-P:'<svg viewBox="0 0 60 60"><g fill="white" stroke="black" stroke-width="2"><circle cx="30" cy="15" r="7"/><path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>',
-
-p:'<svg viewBox="0 0 60 60"><g fill="black" stroke="black" stroke-width="2"><circle cx="30" cy="15" r="7"/><path d="M24 24 L36 24 L38 29 L36 33 L40 46 L20 46 L24 33 L22 29 Z"/><rect x="14" y="50" width="32" height="4"/></g></svg>'
+n: '<svg viewBox="0 0 60 60" width="32" height="32">' +
+   '<g transform="translate(6,7) scale(1.48)" fill="black" stroke="black" stroke-width="1.15">' +
+   '<path d="M21.595 24.502c-0.562-0.617-0.354-2.674-0.354-2.674s1.107-4.826 1.711-5.932c0.604-1.105 0.62-4.278 0.62-4.278s-0.118-1.963-0.974-4.384c-0.856-2.42-3.852-4.44-5.872-4.766C16.519 1.333 14.734 0 14.734 0s0.295 2.439-0.03 2.483c-0.325 0.044-1.682 0.443-1.682 0.443l0.31 1.003c-1.756 0.518-2.458 1.019-2.458 1.019s-0.05 0.089-0.375 0.753S6.294 9.463 6.111 9.67c-0.183 0.207-0.078 0.604-0.078 0.604s-0.062 0.812-0.106 0.856c-0.044 0.045-0.163 0.664 0.051 0.93c0.214 0.267 0.376 0.59 0.803 0.944c0.428 0.354 0.546 0.118 0.546 0.118s0.036 0.135 1.225 0.321c1.461 0.013 1.962-1.059 1.962-1.059s0.428-0.752 1.564-0.531c2.272 1.181 3.815 0.292 3.815 0.292s-1.849 1.532-4.603 5.564c-2.754 4.031-0.787 6.791-0.787 6.791z"/>' +
+   '<rect x="6.5" y="27.2" width="18.5" height="4.2" fill="black"/>' +
+   '</g></svg>'
 };
 
-let board=[];
-let selected=null;
-let setupMode=true;
-let selectedPiece='';
-let turn='white';
-let flipped=false;
+var board = [];
+var selected = null;
+var turn = 'white';
+var flipped = false;
 
-let initialBoard=null;
-let initialTurn='white';
+var setupMode = true;
+var selectedPiece = '';
 
-let enPassant=null;
-let pendingPromotion=null;
-let moved={};
+var initialBoard = null;
+var initialTurn = 'white';
 
-let solutionMoves=[];
-let solutionIndex=0;
-let solutionMode=false;
+var puzzleGoal = '';
+var solutionMoves = [];
+var solutionIndex = 0;
+var solutionMode = false;
+var puzzleCompleted = false;
 
-let puzzleGoal='';
-let puzzleStart=false;
-let puzzleCompleted=false;
+var moveHistory = [];
+var historyIndex = 0;
 
-let puzzleList=[];
-let puzzleIndex=0;
+var lastMove = null;
+var checkmateSquare = null;
+var checkingPieceSquare = null;
 
-let moveHistory=[];
-let historyIndex=-1;
+function cloneBoard(src) {
+  return JSON.parse(JSON.stringify(src));
+}
 
-let lastMove=null;
-let checkmateSquare=null;
-let checkingPieceSquare=null;
-let gameOver=false;
+function initEmptyBoard() {
+  board = [];
+  var r, c, row;
 
-function initEmptyBoard(){
-  board=[];
-  for(let r=0;r<8;r++){
-    board.push(['','','','','','','','']);
+  for (r = 0; r < 8; r++) {
+    row = [];
+    for (c = 0; c < 8; c++) {
+      row.push('');
+    }
+    board.push(row);
   }
 }
 
-function initStandardBoard(){
-  board=[
+function initStandardBoard() {
+  board = [
     ['r','n','b','q','k','b','n','r'],
     ['p','p','p','p','p','p','p','p'],
     ['','','','','','','',''],
@@ -227,118 +366,214 @@ function initStandardBoard(){
   ];
 }
 
-function cloneBoard(b){
-  return JSON.parse(JSON.stringify(b));
+function selectPiece(p) {
+  selectedPiece = p;
 }
 
-function isWhitePiece(p){
-  return p && p===p.toUpperCase();
-}
-
-function selectPiece(p){
-  selectedPiece=p;
-}
-
-function clearSquare(){
-  selectedPiece='';
-}
-
-function clearBoard(){
+function clearBoard() {
   initEmptyBoard();
   draw();
 }
 
-function setTurn(t){
-  turn=t;
+function setTurn(t) {
+  turn = t;
   draw();
 }
 
-function doneSetup(){
-  setupMode=false;
-  puzzleStart=false;
-  initialBoard=cloneBoard(board);
-  initialTurn=turn;
-  moveHistory=[cloneBoard(board)];
-  historyIndex=0;
+	function doneSetup() {
+  setupMode = false;
+  puzzleCompleted = false;
+  solutionMode = false;
+  solutionIndex = 0;
+
+  initialBoard = cloneBoard(board);
+  initialTurn = turn;
+
+  moveHistory = [cloneBoard(board)];
+  historyIndex = 0;
+
+  selected = null;
+  lastMove = null;
+
   draw();
 }
 
-function backToSetup(){
-  setupMode=true;
-  solutionMode=false;
-  selected=null;
+function backToSetup() {
+  setupMode = true;
+  selected = null;
+  solutionMode = false;
   draw();
 }
 
-function flipPieces(){
-  flipped=!flipped;
+function flipBoard() {
+  flipped = !flipped;
   draw();
 }
 
-function draw(){
+function isWhitePiece(p) {
+  if (!p) return false;
+  return p === p.toUpperCase();
+}
 
-  const el=document.getElementById('board');
-  el.innerHTML='';
+function parseSquare(s) {
+  return {
+    c: s.charCodeAt(0) - 97,
+    r: 8 - parseInt(s.charAt(1), 10)
+  };
+}
 
-  const tbl=document.createElement('table');
+function sameColor(a,b){
+  if(!a || !b) return false;
+  return isWhitePiece(a) === isWhitePiece(b);
+}
 
-  for(let vr=0;vr<8;vr++){
+function isBasicLegalMove(from,to){
 
-    const tr=document.createElement('tr');
+  var p = board[from.r][from.c];
+  if(!p) return false;
 
-    for(let vc=0;vc<8;vc++){
+  if(sameColor(p, board[to.r][to.c])) return false;
 
-      const r=flipped ? 7-vr : vr;
-      const c=flipped ? 7-vc : vc;
+  var dr = to.r - from.r;
+  var dc = to.c - from.c;
+  var adr = Math.abs(dr);
+  var adc = Math.abs(dc);
 
-      const td=document.createElement('td');
-      td.className=((r+c)%2)?'dark':'light';
+  var piece = p.toLowerCase();
 
-      if(board[r][c]){
-        td.innerHTML=pieces[board[r][c]];
+  if(piece === 'p'){
+    var dir = isWhitePiece(p) ? -1 : 1;
+
+    if(dc===0 && dr===dir && !board[to.r][to.c]) return true;
+
+    if(adc===1 && dr===dir && board[to.r][to.c]) return true;
+
+    return false;
+  }
+
+  if(piece === 'n'){
+    return (adr===2 && adc===1) || (adr===1 && adc===2);
+  }
+
+  if(piece === 'k'){
+    return adr<=1 && adc<=1;
+  }
+
+  if(piece === 'b'){
+    return adr===adc;
+  }
+
+  if(piece === 'r'){
+    return dr===0 || dc===0;
+  }
+
+  if(piece === 'q'){
+    return adr===adc || dr===0 || dc===0;
+  }
+
+  return false;
+}
+
+function getLegalMoves(from){
+
+  var out = [];
+  var r,c;
+
+  for(r=0;r<8;r++){
+    for(c=0;c<8;c++){
+      if(isBasicLegalMove(from,{r:r,c:c})){
+        out.push({r:r,c:c});
+      }
+    }
+  }
+
+  return out;
+}
+	
+function draw() {
+
+  var html = '<table>';
+  var vr, vc, r, c, cls, p;
+  var legalMoves = [];
+  var m;
+
+  if (selected) {
+    legalMoves = getLegalMoves(selected);
+  }
+
+  for (vr = 0; vr < 8; vr++) {
+
+    html += '<tr>';
+
+    for (vc = 0; vc < 8; vc++) {
+
+      r = flipped ? (7 - vr) : vr;
+      c = flipped ? (7 - vc) : vc;
+
+      cls = ((r + c) % 2) ? 'dark' : 'light';
+
+      if (selected && selected.r === r && selected.c === c) {
+        cls += ' selected';
       }
 
-      if(selected && selected.r===r && selected.c===c){
-        td.className+=' selected';
-      }
-
-      if(lastMove){
-        if(lastMove.from.r===r && lastMove.from.c===c){
-          td.className+=' lastmove';
+      if (lastMove) {
+        if (lastMove.from.r === r && lastMove.from.c === c) {
+          cls += ' lastfrom';
         }
-        if(lastMove.to.r===r && lastMove.to.c===c){
-          td.className+=' lastmoveTo';
+        if (lastMove.to.r === r && lastMove.to.c === c) {
+          cls += ' lastto';
         }
       }
 
-      td.onclick=(function(rr,cc){
-        return function(){ handleTap(rr,cc); };
-      })(r,c);
+      for (m = 0; m < legalMoves.length; m++) {
+        if (
+          legalMoves[m].r === r &&
+          legalMoves[m].c === c
+        ) {
+          cls += ' move';
+          break;
+        }
+      }
 
-      tr.appendChild(td);
+      html += '<td class="' + cls + '" onclick="handleTap(' + r + ',' + c + ')">';
+
+      p = board[r][c];
+
+      if (p) {
+        if (isWhitePiece(p)) {
+          html += pieces[p];
+        } else {
+          html += pieces[p];
+        }
+      }
+
+      html += '</td>';
     }
 
-    tbl.appendChild(tr);
+    html += '</tr>';
   }
 
-  el.appendChild(tbl);
+  html += '</table>';
 
-  let msg='';
+  document.getElementById('board').innerHTML = html;
 
-  if(puzzleCompleted){
-    msg='Puzzle Completed!';
+  var msg = '';
+
+  if (setupMode) {
+    msg = 'Setup Mode';
   }
-  else if(setupMode){
-    msg='Load Puzzle or Setup board manually!';
+  else if (puzzleCompleted) {
+    msg = 'Puzzle Completed!';
   }
-  else{
-    msg=(turn==='white'?'White':'Black') + ' to play';
-    if(puzzleGoal){
-      msg+=' | '+puzzleGoal;
+  else {
+    msg = (turn === 'white' ? 'White' : 'Black') + ' to play';
+
+    if (puzzleGoal) {
+      msg += ' | ' + puzzleGoal;
     }
   }
 
-  document.getElementById('info').textContent=msg;
+  document.getElementById('info').innerHTML = msg;
 }
 
 function handleTap(r,c){
@@ -355,14 +590,25 @@ function handleTap(r,c){
   }
 
   if(!selected){
-    if(board[r][c]){
-      if(turn==='white' && isWhitePiece(board[r][c])){
-        selected={r:r,c:c};
-      }
-      else if(turn==='black' && !isWhitePiece(board[r][c])){
-        selected={r:r,c:c};
-      }
-    }
+
+    if(!board[r][c]) return;
+
+    if(turn==='white' && !isWhitePiece(board[r][c])) return;
+    if(turn==='black' && isWhitePiece(board[r][c])) return;
+
+    selected={r:r,c:c};
+    draw();
+    return;
+  }
+
+  if(selected.r===r && selected.c===c){
+    selected=null;
+    draw();
+    return;
+  }
+
+  if(!isBasicLegalMove(selected,{r:r,c:c})){
+    selected=null;
     draw();
     return;
   }
@@ -371,268 +617,315 @@ function handleTap(r,c){
   selected=null;
   draw();
 }
-	function parseSquare(s){
-  return {
-    c:s.charCodeAt(0)-97,
-    r:8-parseInt(s.charAt(1),10)
-  };
-}
 
-function attemptMove(from,to){
-
-  if(solutionMoves.length>0 && solutionIndex<solutionMoves.length){
-
-    const exp = solutionMoves[solutionIndex];
-    const ef = parseSquare(exp.substring(0,2));
-    const et = parseSquare(exp.substring(2,4));
-
-    if(
-      from.r===ef.r &&
-      from.c===ef.c &&
-      to.r===et.r &&
-      to.c===et.c
-    ){
-      makeMove(from,to);
-      solutionIndex++;
-
-      if(solutionIndex>=solutionMoves.length){
-        puzzleCompleted=true;
-      }
-    }
-    return;
-  }
-
-  makeMove(from,to);
-}
-
-function makeMove(from,to){
+function makeMove(from, to) {
 
   moveHistory.push(cloneBoard(board));
   historyIndex++;
 
-  board[to.r][to.c]=board[from.r][from.c];
-  board[from.r][from.c]='';
+  board[to.r][to.c] = board[from.r][from.c];
+  board[from.r][from.c] = '';
 
-  lastMove={
-    from:{r:from.r,c:from.c},
-    to:{r:to.r,c:to.c}
+  lastMove = {
+    from: { r:from.r, c:from.c },
+    to: { r:to.r, c:to.c }
   };
 
-  turn=(turn==='white')?'black':'white';
+  turn = (turn === 'white') ? 'black' : 'white';
 }
 
-function prevMove(){
+function attemptMove(from, to) {
 
-  if(historyIndex<=0) return;
+  if (solutionMoves.length === 0) {
+    makeMove(from, to);
+    return;
+  }
+
+  if (solutionIndex >= solutionMoves.length) {
+    return;
+  }
+
+  var expected = solutionMoves[solutionIndex];
+  var ef = parseSquare(expected.substring(0,2));
+  var et = parseSquare(expected.substring(2,4));
+
+  if (
+    from.r !== ef.r ||
+    from.c !== ef.c ||
+    to.r !== et.r ||
+    to.c !== et.c
+  ) {
+    return;
+  }
+
+  makeMove(from, to);
+  solutionIndex++;
+
+  if (solutionIndex >= solutionMoves.length) {
+    puzzleCompleted = true;
+    draw();
+    return;
+  }
+
+  var reply = solutionMoves[solutionIndex];
+  var rf = parseSquare(reply.substring(0,2));
+  var rt = parseSquare(reply.substring(2,4));
+
+  makeMove(rf, rt);
+  solutionIndex++;
+
+  if (solutionIndex >= solutionMoves.length) {
+    puzzleCompleted = true;
+  }
+}
+
+function prevMove() {
+
+  if (historyIndex <= 0) return;
 
   historyIndex--;
-  board=cloneBoard(moveHistory[historyIndex]);
+  board = cloneBoard(moveHistory[historyIndex]);
   draw();
 }
 
-function nextMove(){
+function nextMove() {
 
-  if(solutionIndex>=solutionMoves.length) return;
+  if (solutionIndex >= solutionMoves.length) return;
 
-  const mv=solutionMoves[solutionIndex];
-  const from=parseSquare(mv.substring(0,2));
-  const to=parseSquare(mv.substring(2,4));
+  var mv = solutionMoves[solutionIndex];
+  var from = parseSquare(mv.substring(0,2));
+  var to = parseSquare(mv.substring(2,4));
 
-  makeMove(from,to);
+  makeMove(from, to);
   solutionIndex++;
-  draw();
-}
 
-function resetPuzzle(){
-
-  if(!initialBoard) return;
-
-  board=cloneBoard(initialBoard);
-  turn=initialTurn;
-  selected=null;
-  solutionIndex=0;
-  solutionMode=false;
-  puzzleCompleted=false;
-  moveHistory=[cloneBoard(board)];
-  historyIndex=0;
-  lastMove=null;
+  if (solutionIndex >= solutionMoves.length) {
+    puzzleCompleted = true;
+  }
 
   draw();
 }
 
-function startSolutionMode(){
-  solutionMode=true;
+function resetPuzzle() {
+
+  if (!initialBoard) return;
+
+  board = cloneBoard(initialBoard);
+  turn = initialTurn;
+
+  selected = null;
+  solutionIndex = 0;
+  solutionMode = false;
+  puzzleCompleted = false;
+
+  moveHistory = [cloneBoard(board)];
+  historyIndex = 0;
+
+  lastMove = null;
+
+  draw();
 }
 
-function playSolutionMove(){
+function startSolutionMode() {
+  solutionMode = true;
+}
 
-  if(solutionIndex>=solutionMoves.length){
-    solutionMode=false;
+function playSolutionMove() {
+
+  if (solutionIndex >= solutionMoves.length) {
+    solutionMode = false;
     return;
   }
 
   nextMove();
 }
 
-function applyPGNMove(move){
+function applyPGNMove(move) {
 
-  if(move==='O-O'){
-    if(turn==='white'){
-      board[7][6]='K';
-      board[7][5]='R';
-      board[7][4]='';
-      board[7][7]='';
-    }else{
-      board[0][6]='k';
-      board[0][5]='r';
-      board[0][4]='';
-      board[0][7]='';
+  if (!move) return;
+
+  move = move.replace(/[+#?!]/g, '');
+
+  if (move === 'O-O') {
+    if (turn === 'white') {
+      board[7][6] = 'K';
+      board[7][5] = 'R';
+      board[7][4] = '';
+      board[7][7] = '';
+    } else {
+      board[0][6] = 'k';
+      board[0][5] = 'r';
+      board[0][4] = '';
+      board[0][7] = '';
     }
-    turn=(turn==='white')?'black':'white';
+    turn = (turn === 'white') ? 'black' : 'white';
     return;
   }
 
-  if(move==='O-O-O'){
-    if(turn==='white'){
-      board[7][2]='K';
-      board[7][3]='R';
-      board[7][4]='';
-      board[7][0]='';
-    }else{
-      board[0][2]='k';
-      board[0][3]='r';
-      board[0][4]='';
-      board[0][0]='';
+  if (move === 'O-O-O') {
+    if (turn === 'white') {
+      board[7][2] = 'K';
+      board[7][3] = 'R';
+      board[7][4] = '';
+      board[7][0] = '';
+    } else {
+      board[0][2] = 'k';
+      board[0][3] = 'r';
+      board[0][4] = '';
+      board[0][0] = '';
     }
-    turn=(turn==='white')?'black':'white';
+    turn = (turn === 'white') ? 'black' : 'white';
     return;
   }
 
-  move=move.replace(/[+#?!]/g,'');
+  var piece = 'P';
+  var target, to;
+  var r, c, p;
 
-  let piece='P';
-
-  if(/[KQRBN]/.test(move.charAt(0))){
-    piece=move.charAt(0);
+  if (/^[KQRBN]/.test(move.charAt(0))) {
+    piece = move.charAt(0);
   }
 
-  const target=move.slice(-2);
+  target = move.slice(-2);
 
-  if(!/^[a-h][1-8]$/.test(target)) return;
+  if (!/^[a-h][1-8]$/.test(target)) {
+    return;
+  }
 
-  const to=parseSquare(target);
+  to = parseSquare(target);
 
-  for(let r=0;r<8;r++){
-    for(let c=0;c<8;c++){
+  for (r = 0; r < 8; r++) {
+    for (c = 0; c < 8; c++) {
 
-      const p=board[r][c];
-      if(!p) continue;
+      p = board[r][c];
+      if (!p) continue;
 
-      if(turn==='white'){
-        if(p!==piece) continue;
-      }else{
-        if(p!==piece.toLowerCase()) continue;
+      if (turn === 'white') {
+        if (p !== piece) continue;
+      } else {
+        if (p !== piece.toLowerCase()) continue;
       }
 
-      board[to.r][to.c]=p;
-      board[r][c]='';
-      turn=(turn==='white')?'black':'white';
+      board[to.r][to.c] = p;
+      board[r][c] = '';
+
+      turn = (turn === 'white') ? 'black' : 'white';
       return;
     }
   }
 }
 
-function loadPGN(){
+function loadPGN() {
 
-  const raw=document.getElementById('pgnInput').value.trim();
-  if(!raw) return;
+  var raw = document.getElementById('pgnInput').value;
+  if (!raw) return;
 
-  const parts=raw.split('|');
+  raw = raw.replace(/^\s+|\s+$/g, '');
 
-  puzzleGoal=parts[0] || 'To win';
-  const history=parts[1] || '';
-  const solution=parts[2] || '';
+  var parts = raw.split('|');
+
+  puzzleGoal = parts[0] || 'To win';
+
+  var history = parts[1] || '';
+  var solution = parts[2] || '';
 
   initStandardBoard();
-  turn='white';
+  turn = 'white';
 
-  const moves=history.split(/\s+/);
+  var moves = history.split(/\s+/);
+  var i;
 
-  for(let i=0;i<moves.length;i++){
-    if(moves[i]){
-      applyPGNMove(moves[i]);
-    }
+  for (i = 0; i < moves.length; i++) {
+    applyPGNMove(moves[i]);
   }
 
-  solutionMoves=solution.trim()?solution.trim().split(/\s+/):[];
-  solutionIndex=0;
+  solutionMoves = [];
 
-  initialBoard=cloneBoard(board);
-  initialTurn=turn;
+  if (solution.replace(/\s+/g,'')) {
+    solutionMoves = solution.split(/\s+/);
+  }
 
-  setupMode=false;
-  puzzleStart=true;
-  puzzleCompleted=false;
-  solutionMode=false;
+  solutionIndex = 0;
+  solutionMode = false;
+  puzzleCompleted = false;
+  setupMode = false;
 
-  moveHistory=[cloneBoard(board)];
-  historyIndex=0;
+  initialBoard = cloneBoard(board);
+  initialTurn = turn;
+
+  moveHistory = [cloneBoard(board)];
+  historyIndex = 0;
+
+  lastMove = null;
+  selected = null;
 
   draw();
 }
 
-function loadPuzzleFile(){
+function loadPuzzleFile() {
 
-  document.getElementById('info').textContent='Fetching Lichess puzzle...';
+  document.getElementById('info').innerHTML =
+    'Fetching Lichess daily puzzle...';
 
-  var xhr=new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
 
-  xhr.onreadystatechange=function(){
+  xhr.onreadystatechange = function() {
 
-    if(xhr.readyState!==4) return;
+    if (xhr.readyState !== 4) return;
 
-    if(xhr.status!==200){
-      document.getElementById('info').textContent='Lichess fetch failed';
+    if (xhr.status !== 200) {
+      document.getElementById('info').innerHTML =
+        'Lichess fetch failed';
       return;
     }
 
-    try{
+    try {
 
-      const data=JSON.parse(xhr.responseText);
+      var data = JSON.parse(xhr.responseText);
+      var goal = 'To win';
 
-      let goal='To win';
-
-      if(
+      if (
         data.puzzle &&
         data.puzzle.themes &&
-        data.puzzle.themes.indexOf('mate')>=0
-      ){
-        goal='Mate in ' + Math.ceil(data.puzzle.solution.length/2);
+        data.puzzle.solution &&
+        data.puzzle.themes.indexOf('mate') >= 0
+      ) {
+        goal = 'Mate in ' +
+          Math.ceil(data.puzzle.solution.length / 2);
       }
 
-      let pgn=data.game.pgn;
-      pgn=pgn.replace(/\[[^\]]*\]/g,'');
-      pgn=pgn.replace(/\d+\./g,'');
-      pgn=pgn.trim();
+      var pgn = data.game.pgn || '';
 
-      const compact=
+      pgn = pgn.replace(/\[[^\]]*\]/g, '');
+      pgn = pgn.replace(/\d+\./g, '');
+      pgn = pgn.replace(/1-0|0-1|1\/2-1\/2|\*/g, '');
+      pgn = pgn.replace(/^\s+|\s+$/g, '');
+
+      var compact =
         goal + '|' +
         pgn + '|' +
         data.puzzle.solution.join(' ');
 
-      document.getElementById('pgnInput').value=compact;
+      document.getElementById('pgnInput').value = compact;
+
       loadPGN();
 
-    }catch(e){
-      document.getElementById('info').textContent='Puzzle parse error';
+    } catch(e) {
+      document.getElementById('info').innerHTML =
+        'Puzzle parse error';
     }
   };
 
-  xhr.open('GET','https://lichess.org/api/puzzle/daily',true);
+  xhr.open(
+    'GET',
+    'https://lichess.org/api/puzzle/daily',
+    true
+  );
+
   xhr.send();
 }
 
-function loadNextPuzzle(){
+function loadNextPuzzle() {
   loadPuzzleFile();
 }
 
@@ -641,4 +934,4 @@ draw();
 
 </script>
 </body>
-</html>
+</html>	
