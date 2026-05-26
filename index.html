@@ -636,46 +636,39 @@ function makeMove(from, to) {
 
 function attemptMove(from, to) {
 
-  if (solutionMoves.length === 0) {
-    makeMove(from, to);
-    return;
-  }
-
-  if (solutionIndex >= solutionMoves.length) {
-    return;
-  }
-
-  var expected = solutionMoves[solutionIndex];
-  var ef = parseSquare(expected.substring(0,2));
-  var et = parseSquare(expected.substring(2,4));
+  makeMove(from, to);
 
   if (
-    from.r !== ef.r ||
-    from.c !== ef.c ||
-    to.r !== et.r ||
-    to.c !== et.c
+    solutionMoves.length > 0 &&
+    solutionIndex < solutionMoves.length
   ) {
-    return;
-  }
 
-  makeMove(from, to);
-  solutionIndex++;
+    var expected = solutionMoves[solutionIndex];
+    var ef = parseSquare(expected.substring(0,2));
+    var et = parseSquare(expected.substring(2,4));
 
-  if (solutionIndex >= solutionMoves.length) {
-    puzzleCompleted = true;
-    draw();
-    return;
-  }
+    if (
+      from.r === ef.r &&
+      from.c === ef.c &&
+      to.r === et.r &&
+      to.c === et.c
+    ) {
+      solutionIndex++;
 
-  var reply = solutionMoves[solutionIndex];
-  var rf = parseSquare(reply.substring(0,2));
-  var rt = parseSquare(reply.substring(2,4));
+      if (solutionIndex < solutionMoves.length) {
 
-  makeMove(rf, rt);
-  solutionIndex++;
+        var reply = solutionMoves[solutionIndex];
+        var rf = parseSquare(reply.substring(0,2));
+        var rt = parseSquare(reply.substring(2,4));
 
-  if (solutionIndex >= solutionMoves.length) {
-    puzzleCompleted = true;
+        makeMove(rf, rt);
+        solutionIndex++;
+      }
+
+      if (solutionIndex >= solutionMoves.length) {
+        puzzleCompleted = true;
+      }
+    }
   }
 }
 
@@ -727,7 +720,26 @@ function resetPuzzle() {
 }
 
 function startSolutionMode() {
+
   solutionMode = true;
+
+  function autoStep() {
+
+    if (!solutionMode) return;
+
+    if (solutionIndex >= solutionMoves.length) {
+      solutionMode = false;
+      puzzleCompleted = true;
+      draw();
+      return;
+    }
+
+    nextMove();
+
+    setTimeout(autoStep, 600);
+  }
+
+  autoStep();
 }
 
 function playSolutionMove() {
