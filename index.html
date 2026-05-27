@@ -335,6 +335,7 @@ var historyIndex = 0;
 var lastMove = null;
 var checkmateSquare = null;
 var checkingPieceSquare = null;
+var enPassant = null;
 
 function cloneBoard(src) {
   return JSON.parse(JSON.stringify(src));
@@ -730,6 +731,7 @@ function resetPuzzle() {
   solutionIndex = 0;
   solutionMode = false;
   puzzleCompleted = false;
+  enPassant = null;
 
   moveHistory = [cloneBoard(board)];
   historyIndex = 0;
