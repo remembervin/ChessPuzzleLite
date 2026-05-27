@@ -827,6 +827,69 @@ function applyPGNMove(move) {
   }
 }
 
+function loadNextPuzzle() {
+
+  document.getElementById('info').innerHTML =
+    'Fetching random Lichess puzzle...';
+
+  var xhr = new XMLHttpRequest();
+
+  xhr.onreadystatechange = function() {
+
+    if (xhr.readyState !== 4) return;
+
+    if (xhr.status !== 200) {
+      document.getElementById('info').innerHTML =
+        'Random puzzle fetch failed';
+      return;
+    }
+
+    try {
+
+      var data = JSON.parse(xhr.responseText);
+      var goal = 'To win';
+
+      if (
+        data.puzzle &&
+        data.puzzle.themes &&
+        data.puzzle.solution &&
+        data.puzzle.themes.indexOf('mate') >= 0
+      ) {
+        goal = 'Mate in ' +
+          Math.ceil(data.puzzle.solution.length / 2);
+      }
+
+      var pgn = data.game.pgn || '';
+
+      pgn = pgn.replace(/\[[^\]]*\]/g, '');
+      pgn = pgn.replace(/\d+\./g, '');
+      pgn = pgn.replace(/1-0|0-1|1\/2-1\/2|\*/g, '');
+      pgn = pgn.replace(/^\s+|\s+$/g, '');
+
+      var compact =
+        goal + '|' +
+        pgn + '|' +
+        data.puzzle.solution.join(' ');
+
+      document.getElementById('pgnInput').value = compact;
+
+      loadPGN();
+
+    } catch(e) {
+      document.getElementById('info').innerHTML =
+        'Puzzle parse error';
+    }
+  };
+
+  xhr.open(
+    'GET',
+    'https://lichess.org/api/puzzle/next',
+    true
+  );
+
+  xhr.send();
+}
+
 function loadPGN() {
 
   var raw = document.getElementById('pgnInput').value;
@@ -935,10 +998,6 @@ function loadPuzzleFile() {
   );
 
   xhr.send();
-}
-
-function loadNextPuzzle() {
-  loadPuzzleFile();
 }
 
 initEmptyBoard();
